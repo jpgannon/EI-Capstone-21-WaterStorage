@@ -139,8 +139,8 @@ ws3_upper_snowdat_hr[,grep("RTD", colnames(ws3_upper_snowdat_hr))] <- lapply(ws3
 
 #AW - adds a column with the average ignoring the NA 
 ws3_upper_snowdat_hr <- ws3_upper_snowdat_hr %>% 
-    mutate(VWC_average = rowMeans(ws3_upper_snowdat_hr[,c('H2O_Content_1_Avg','H2O_Content_2_Avg')]))
-# na.rm = TRUE ))
+    mutate(VWC_average = rowMeans(ws3_upper_snowdat_hr[,c('H2O_Content_1_Avg','H2O_Content_2_Avg')],
+ na.rm = TRUE ))
 
 #reading in WS9 Snow 15 mins 
 # AW - currently the VWC is either 0 or NA for all entries 
@@ -215,8 +215,8 @@ ws9_upper_snowdat_hr[,grep("RTD", colnames(ws9_upper_snowdat_hr))] <- lapply(ws9
 
 #AW - adds a column with the average
 ws9_upper_snowdat_hr <- ws9_upper_snowdat_hr %>% 
-    mutate(VWC_average = rowMeans(ws9_upper_snowdat_hr[,c('H2O_Content_1_Avg','H2O_Content_2_Avg')]))
-#                              na.rm = TRUE ))
+    mutate(VWC_average = rowMeans(ws9_upper_snowdat_hr[,c('H2O_Content_1_Avg','H2O_Content_2_Avg')],
+                             na.rm = TRUE ))
 
 #AW - Read in precip & discharge data 
 
@@ -258,7 +258,8 @@ WS9_Precip <- read_csv("water_data_files/rrg19_Rg_19-2019-08-09.dat",
   summarise(ReportPCP = mean(ReportPCP)) %>%
   ungroup() %>%
   mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
-  select(-c(month, day, year, hour), TIMESTAMP, ReportPCP)
+  select(-c(month, day, year, hour), TIMESTAMP, ReportPCP) %>% 
+  mutate(ReportPCP = ReportPCP * 10)
 
 WS3_Precip <- read_csv("water_data_files/wxsta1_Wx_1_rain.dat", 
                        skip = 4, 
@@ -271,7 +272,8 @@ WS3_Precip <- read_csv("water_data_files/wxsta1_Wx_1_rain.dat",
   summarise(ReportPCP = mean(ReportPCP)) %>%
   ungroup() %>%
   mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
-  select(-c(month, day, year, hour), TIMESTAMP, ReportPCP)
+  select(-c(month, day, year, hour), TIMESTAMP, ReportPCP) %>% 
+  mutate(ReportPCP = ReportPCP * 10)
 
 
 #AW - full join and pivot longer for the WS 3 & 9 precipitation data 
@@ -288,7 +290,6 @@ WS_discharge <- full_join(WS3_weir, WS9_weir, by = "TIMESTAMP") %>%
 # and the discharge data so it is all in one table 
 #The times do not line up at all so mostly it just simplifies it by being all in one table 
 WS_precip_dis <- full_join(WS_precip, WS_discharge, by = c("TIMESTAMP", "Watershed"))
-
 
 
 # Define UI for application
