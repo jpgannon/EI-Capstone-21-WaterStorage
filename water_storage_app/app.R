@@ -319,14 +319,17 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                            tabPanel('Watershed 3',
                                     sidebarLayout(
                                         sidebarPanel(width = 3,
-                                                     dateInput("startdate", label = "Start Date", val= "2020-12-14"), #MU: Should we make the default start value the first data present in the data we read in?
+                                                     dateInput("startdate", label = "Start Date", val= "2020-12-16"), #MU: Should we make the default start value the first data present in the data we read in?
                                                      dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
                                                      # selectInput(inputId = "toview", label = "Select dataset to view:", 
                                                      #             choices = unique(ws3_standard$name), 
                                                      #             selected = unique(ws3_standard$name)[1]),
-                                                     numericInput("poros","Porosity:",
+                                                     numericInput("porosSoil","Soil Porosity:",
                                                                   0.1, step = 0.1, min = 0, max = 1),
-                                                     verbatimTextOutput("value"),
+                                                     numericInput("porosPM","Parent Material Porosity:",
+                                                                  0.1, step = 0.1, min = 0, max = 1),
+                                                     verbatimTextOutput("valueSoil"),
+                                                     verbatimTextOutput("valuePM"),
                                                      fluid = TRUE),
                                         mainPanel(
                                             plotOutput("plot1")
@@ -337,14 +340,17 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                            tabPanel('Watershed 9',
                                     sidebarLayout(
                                     sidebarPanel(width = 3,
-                                                 dateInput("startdate1", label = "Start Date", val= "2020-12-14"), #MU: Should we make the default start value the first data present in the data we read in?
+                                                 dateInput("startdate1", label = "Start Date", val= "2020-12-16"), #MU: Should we make the default start value the first data present in the data we read in?
                                                  dateInput("enddate1", label= "End Date", value=Sys.Date(), max=Sys.Date()),
                                                  # selectInput(inputId = "toview", label = "Select dataset to view:",
                                                  #             choices = unique(ws3_standard$name),
                                                  #             selected = unique(ws3_standard$name)[1]),
-                                                 numericInput("poros2","Porosity:",
+                                                 numericInput("porosSoil1","Soil Porosity:",
                                                               0.1, step = 0.1, min = 0, max = 1),
-                                                 verbatimTextOutput("value1"),
+                                                 numericInput("porosPM1","Parent Material Porosity:",
+                                                              0.1, step = 0.1, min = 0, max = 1),
+                                                 verbatimTextOutput("valueSoil1"),
+                                                 verbatimTextOutput("valuePM1"),
                                                  fluid = TRUE),
                                       mainPanel(
                                         plotOutput("plot2")
@@ -369,17 +375,17 @@ server <- function(input, output) {
     #MU: standardized well ws3 data to mm H2O
     standardized_Well_WS3 <-  reactive({
         ws3_upper_wells %>% 
-            mutate(standardized_well_1 = ((WS3_N1_corr_depth * 10) * input$poros)) %>% 
-            mutate(standardized_well_2 = ((WS3_N2_corr_depth * 10) * input$poros)) %>% 
-            mutate(standardized_deep_well = ((WS3_42_4_d2_corr_depth * 10) * input$poros)) %>%
+            mutate(standardized_well_1 = ((WS3_N1_corr_depth * 10) * input$porosSoil)) %>% 
+            mutate(standardized_well_2 = ((WS3_N2_corr_depth * 10) * input$porosSoil)) %>% 
+            mutate(standardized_deep_well = ((WS3_42_4_d2_corr_depth * 10) * input$porosPM)) %>%
             select(TIMESTAMP, standardized_well_1, standardized_well_2, standardized_deep_well)
     })
     #Mu: standardized well ws9 data to mm H2O
     standardized_Well_WS9 <-  reactive({
         ws9_upper_wells %>% 
-            mutate(standardized_well_1 = ((HB156_corr_depth * 10) * input$poros2)) %>% 
-            mutate(standardized_well_2 = ((HB179s_corr_depth * 10) * input$poros2)) %>% 
-            mutate(standardized_deep_well = ((HB176d_corr_depth * 10) * input$poros2)) %>%
+            mutate(standardized_well_1 = ((HB156_corr_depth * 10) * input$porosSoil1)) %>% 
+            mutate(standardized_well_2 = ((HB179s_corr_depth * 10) * input$porosSoil1)) %>% 
+            mutate(standardized_deep_well = ((HB176d_corr_depth * 10) * input$porosPM1)) %>%
             select(TIMESTAMP, standardized_well_1, standardized_well_2, standardized_deep_well)
     })
     
@@ -402,13 +408,14 @@ server <- function(input, output) {
     #MU: joined ws3 data
     ws3_standard <- reactive ({
         full_join(standardized_Well_WS3(), standardized_SnowHr_WS3(), by = "TIMESTAMP") %>% 
+            select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well) %>% 
             pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>%
-            #select(Depthcleaned, )
             filter(TIMESTAMP > ymd("2020-12-16"))
     })
     
     ws9_standard <- reactive ({
         full_join(standardized_Well_WS9(), standardized_SnowHr_WS9(), by = "TIMESTAMP") %>% 
+            select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well) %>%
             pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
             filter(TIMESTAMP > ymd("2020-12-16"))
     })
@@ -433,11 +440,11 @@ server <- function(input, output) {
       #scale_x_datetime(labels=date_format("%Y-%m-%d"), breaks = date_breaks("week"))
     })
 
-    output$porosPlot <- renderPlot({
-        x <- seq(from = 0, to = 100, by = 0.1)
-        y <- x*input$poros2 + input$change
-        plot(x,y)
-    })
+    # output$porosPlot <- renderPlot({
+    #     x <- seq(from = 0, to = 100, by = 0.1)
+    #     y <- x*input$poros2 + input$change
+    #     plot(x,y)
+    # })
     
     
     # Plot map of station locations using leaflet
