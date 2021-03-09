@@ -226,7 +226,13 @@ WS3_weir <- read_csv("water_data_files/weir3_Ws_3b.dat",
                                    X4 = "Ptemp", X5 = "OptMed", X6 = "OptMax",
                                    X7 = "OptMin", X8 = "Flow_Eq", X9 = "Q",
                                    X10 = "Discharge", X11 = "StreamTemp")) %>% 
-    select(TIMESTAMP, Discharge)
+  select(TIMESTAMP, Discharge) %>% 
+  group_by(year = year(TIMESTAMP), month = month(TIMESTAMP), day = day(TIMESTAMP), hour = hour(TIMESTAMP)) %>% 
+  summarise(Discharge = mean(Discharge)) %>%
+  ungroup() %>%
+  mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
+  select(-c(month, day, year, hour), TIMESTAMP, Discharge)
+
 
 WS9_weir <- read_csv("water_data_files/weir9_Ws_9b.dat", 
                      skip = 4,
@@ -234,7 +240,12 @@ WS9_weir <- read_csv("water_data_files/weir9_Ws_9b.dat",
                                    X4 = "Ptemp", X5 = "OptMed", X6 = "OptMax",
                                    X7 = "OptMin", X8 = "Flow_Eq", X9 = "Q",
                                    X10 = "Discharge", X11 = "StreamTemp")) %>% 
-    select(TIMESTAMP, Discharge)
+  select(TIMESTAMP, Discharge) %>% 
+  group_by(year = year(TIMESTAMP), month = month(TIMESTAMP), day = day(TIMESTAMP), hour = hour(TIMESTAMP)) %>% 
+  summarise(Discharge = mean(Discharge)) %>%
+  ungroup() %>%
+  mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
+  select(-c(month, day, year, hour), TIMESTAMP, Discharge)
 
 WS9_Precip <- read_csv("water_data_files/rrg19_Rg_19-2019-08-09.dat", 
                        skip = 4, 
@@ -242,7 +253,12 @@ WS9_Precip <- read_csv("water_data_files/rrg19_Rg_19-2019-08-09.dat",
                                      X4 = "ActTemp", X5 = "ActDepth", X6 = "ReportPCP",
                                      X7 = "ODPCounts", X8 = "blockedSec", X9 = "Scan10",
                                      X10 = "ActDepthRA")) %>% 
-    select(TIMESTAMP, ReportPCP)
+  select(TIMESTAMP, ReportPCP) %>% 
+  group_by(year = year(TIMESTAMP), month = month(TIMESTAMP), day = day(TIMESTAMP), hour = hour(TIMESTAMP)) %>% 
+  summarise(ReportPCP = mean(ReportPCP)) %>%
+  ungroup() %>%
+  mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
+  select(-c(month, day, year, hour), TIMESTAMP, ReportPCP)
 
 WS3_Precip <- read_csv("water_data_files/wxsta1_Wx_1_rain.dat", 
                        skip = 4, 
@@ -250,17 +266,23 @@ WS3_Precip <- read_csv("water_data_files/wxsta1_Wx_1_rain.dat",
                                      X4 = "ActTemp", X5 = "ActDepth", X6 = "ReportPCP",
                                      X7 = "ODPCounts", X8 = "blockedSec", X9 = "Scan10",
                                      X10 = "ActDepthRA")) %>% 
-    select(TIMESTAMP, ReportPCP)
+  select(TIMESTAMP, ReportPCP) %>% 
+  group_by(year = year(TIMESTAMP), month = month(TIMESTAMP), day = day(TIMESTAMP), hour = hour(TIMESTAMP)) %>% 
+  summarise(ReportPCP = mean(ReportPCP)) %>%
+  ungroup() %>%
+  mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
+  select(-c(month, day, year, hour), TIMESTAMP, ReportPCP)
+
 
 #AW - full join and pivot longer for the WS 3 & 9 precipitation data 
 WS_precip <- full_join(WS3_Precip, WS9_Precip, by = "TIMESTAMP") %>% 
-    `colnames<-`(c("TIMESTAMP", "WS3_Precip", "W9_Precip")) %>% 
-    pivot_longer(!TIMESTAMP, names_to = "Watershed", values_to = "Precip")
+  `colnames<-`(c("WS3_Precip", "TIMESTAMP", "W9_Precip")) %>% 
+  pivot_longer(!TIMESTAMP, names_to = "Watershed", values_to = "Precip")
 
 #AW - full join and pivot longer for the WS 3 & 9 discharge data 
 WS_discharge <- full_join(WS3_weir, WS9_weir, by = "TIMESTAMP") %>% 
-    `colnames<-`(c("TIMESTAMP", "WS3_Discharge", "W9_Discharge")) %>% 
-    pivot_longer(!TIMESTAMP, names_to = "Watershed", values_to = "Discharge")
+  `colnames<-`(c("WS3_Discharge", "TIMESTAMP", "W9_Discharge")) %>% 
+  pivot_longer(!TIMESTAMP, names_to = "Watershed", values_to = "Discharge")
 
 #AW - not sure if this is beneficial; full join for both watersheds of the precip
 # and the discharge data so it is all in one table 
