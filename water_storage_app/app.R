@@ -409,14 +409,14 @@ server <- function(input, output) {
     #MU: joined ws3 data
     ws3_standard <- reactive ({
         full_join(standardized_Well_WS3(), standardized_SnowHr_WS3(), by = "TIMESTAMP") %>% 
-            select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well) %>% 
+            select(TIMESTAMP, Depthcleaned, standardized_well_2, standardized_deep_well) %>% 
             pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>%
             filter(TIMESTAMP > ymd("2020-12-16"))
     })
     
     ws9_standard <- reactive ({
         full_join(standardized_Well_WS9(), standardized_SnowHr_WS9(), by = "TIMESTAMP") %>% 
-            select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well) %>%
+            select(TIMESTAMP, Depthcleaned, standardized_well_2, standardized_deep_well) %>%
             pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
             filter(TIMESTAMP > ymd("2020-12-16"))
     })
@@ -427,16 +427,17 @@ server <- function(input, output) {
     })#MU: This places the filter at the top of the table
     #MU: This is a placeholder table for when we finish cleaning the data and can input summarized values
     output$plot1 <- renderPlot({
-        ws3_standard() %>% 
+        ws3_standard() %>%
+        #select(TIMESTAMP, standardized_well_2, standardized_deep_well, Depthcleaned) %>% 
             filter(mm > 0) %>% 
-            ggplot(aes(x = TIMESTAMP, y = mm, fill=Water ))+
+            ggplot(aes(x = TIMESTAMP, y = mm, fill=Water))+
             geom_area()#+
         #scale_x_datetime(labels=date_format("%Y-%m-%d"), breaks = date_breaks("week"))
     })
     output$plot2 <- renderPlot({
       ws9_standard() %>%
         filter(mm > 0) %>%
-        ggplot(aes(x = TIMESTAMP, y = mm, fill=Water ))+
+        ggplot(aes(x = TIMESTAMP, y = mm, fill=Water))+
         geom_area()#+
       #scale_x_datetime(labels=date_format("%Y-%m-%d"), breaks = date_breaks("week"))
     })
