@@ -333,7 +333,9 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                                      verbatimTextOutput("valuePM"),
                                                      fluid = TRUE),
                                         mainPanel(
-                                            plotOutput("plot1")
+                                            plotOutput("plot1"),
+                                            plotOutput("discharge1"),
+                                            plotOutput("precip1")
                                         )
                                     ) 
                            ),
@@ -354,12 +356,18 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                                  verbatimTextOutput("valuePM1"),
                                                  fluid = TRUE),
                                       mainPanel(
-                                        plotOutput("plot2")
+                                        plotOutput("plot2"),
+                                        plotOutput("discharge2"),
+                                        plotOutput("precip2")
                                       )
                                   )
                             ),
                           
-                           tabPanel('Table View' ,DTOutput("table")),
+                           tabPanel('Table View' ,
+                                    # selectInput("chooseTable", "Choose a Dataset:",
+                                    #             choices = list(WS_3 = ws3_standard(),
+                                    #                            WS_9 = ws9_standard())),
+                                    DTOutput("table")),
                            
                            
                            tabPanel('Map', leafletOutput("map",width = '100%'))
@@ -409,18 +417,18 @@ server <- function(input, output) {
     #MU: joined ws3 data
     ws3_standard <- reactive ({
         full_join(standardized_Well_WS3(), standardized_SnowHr_WS3(), by = "TIMESTAMP") %>% 
-            select(TIMESTAMP, Depthcleaned, standardized_well_2, standardized_deep_well) %>% 
+            select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well) %>% 
             pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>%
             filter(TIMESTAMP > ymd("2020-12-16"))
     })
     
     ws9_standard <- reactive ({
         full_join(standardized_Well_WS9(), standardized_SnowHr_WS9(), by = "TIMESTAMP") %>% 
-            select(TIMESTAMP, Depthcleaned, standardized_well_2, standardized_deep_well) %>%
+            select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well) %>%
             pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
             filter(TIMESTAMP > ymd("2020-12-16"))
     })
-    output$table <- DT::renderDataTable({DT::datatable(standardized_SnowHr_WS3(), #MU: When we do the calculations we can put them in one dataset and output that.
+    output$table <- DT::renderDataTable({DT::datatable(ws3_standard(),#input$chooseTable, #MU: When we do the calculations we can put them in one dataset and output that.
                                                        class = "display", #MU: this is the style of the table
                                                        caption = 'Table 1: This table shows x.', #MU: adds a caption to the table
                                                        filter = "top")
@@ -429,19 +437,43 @@ server <- function(input, output) {
     output$plot1 <- renderPlot({
         ws3_standard() %>%
         #select(TIMESTAMP, standardized_well_2, standardized_deep_well, Depthcleaned) %>% 
-            filter(mm > 0) %>% 
+            filter(mm > 0 & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
             ggplot(aes(x = TIMESTAMP, y = mm, fill=Water))+
             geom_area()#+
         #scale_x_datetime(labels=date_format("%Y-%m-%d"), breaks = date_breaks("week"))
     })
     output$plot2 <- renderPlot({
       ws9_standard() %>%
-        filter(mm > 0) %>%
+        filter(mm > 0 & TIMESTAMP >= input$startdate1 & TIMESTAMP <= input$enddate1) %>%
         ggplot(aes(x = TIMESTAMP, y = mm, fill=Water))+
         geom_area()#+
       #scale_x_datetime(labels=date_format("%Y-%m-%d"), breaks = date_breaks("week"))
     })
+    
+    output$discharge1 <- renderPlot({
+      WS_discharge %>% 
+        filter(Watershed == "WS3_Discharge" & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
+        ggplot(aes(x = TIMESTAMP, y = Discharge)) +
+        geom_line()
+      #MU: This is where discharge plot for WS3 goes.
+    })
+    
+    output$discharge2 <- renderPlot({
+      WS_discharge %>% 
+        filter(Watershed == "W9_Discharge" & TIMESTAMP >= input$startdate1 & TIMESTAMP <= input$enddate1) %>% 
+        ggplot(aes(x = TIMESTAMP, y = Discharge)) +
+        geom_line()
+      #MU: This is where discharge plot for WS9 goes.
+    })
 
+    output$precip1 <- renderPlot({
+      #MU: This is where precip plot for WS3 goes.
+    })
+    
+    output$precip2 <- renderPlot({
+      #MU: This is where precip plot for WS9 goes.
+    })
+    
     # output$porosPlot <- renderPlot({
     #     x <- seq(from = 0, to = 100, by = 0.1)
     #     y <- x*input$poros2 + input$change
