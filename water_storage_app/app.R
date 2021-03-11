@@ -17,6 +17,7 @@ library(DT) #MU: Helpful for displaying data tables.
 library(tidyverse) #MU: I added tidyverse because it has ggplot2 and other good functions 
 library(grid)
 library(shinythemes)
+library(ggplot2)
 #reading in WS3 well data
 #setwd("/Volumes/GoogleDrive/My Drive/CLASSES/EI Capstone/EI_Capstone_S21")
 ws3_upper_wells <- read_csv("water_data_files/Water_table_WS3upper_WS_3Up_wells.dat",
@@ -278,7 +279,7 @@ WS3_Precip <- read_csv("water_data_files/wxsta1_Wx_1_rain.dat",
 
 #AW - full join and pivot longer for the WS 3 & 9 precipitation data 
 WS_precip <- full_join(WS3_Precip, WS9_Precip, by = "TIMESTAMP") %>% 
-  `colnames<-`(c("WS3_Precip", "TIMESTAMP", "W9_Precip")) %>% 
+  `colnames<-`(c("W3_Precip", "TIMESTAMP", "W9_Precip")) %>% 
   pivot_longer(!TIMESTAMP, names_to = "Watershed", values_to = "Precip")
 
 #AW - full join and pivot longer for the WS 3 & 9 discharge data 
@@ -468,10 +469,18 @@ server <- function(input, output) {
 
     output$precip1 <- renderPlot({
       #MU: This is where precip plot for WS3 goes.
+      WS_precip %>% 
+        filter(Watershed == "W3_Precip" & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
+        ggplot(aes(x = TIMESTAMP, y = Precip)) +
+        geom_bar(stat = "identity")
     })
     
     output$precip2 <- renderPlot({
       #MU: This is where precip plot for WS9 goes.
+      WS_precip %>% 
+        filter(Watershed == "W9_Precip" & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
+        ggplot(aes(x = TIMESTAMP, y = Precip)) +
+        geom_bar(stat = "identity")
     })
     
     # output$porosPlot <- renderPlot({
