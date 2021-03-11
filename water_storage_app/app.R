@@ -440,14 +440,20 @@ server <- function(input, output) {
         #select(TIMESTAMP, standardized_well_2, standardized_deep_well, Depthcleaned) %>% 
             filter(mm > 0 & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
             ggplot(aes(x = TIMESTAMP, y = mm, fill=Water))+
-            geom_area()#+
+            geom_area(alpha=0.8) +
+        labs(x = "Time", y = "H20 (mm)") 
         #scale_x_datetime(labels=date_format("%Y-%m-%d"), breaks = date_breaks("week"))
     })
     output$plot2 <- renderPlot({
       ws9_standard() %>%
         filter(mm > 0 & TIMESTAMP >= input$startdate1 & TIMESTAMP <= input$enddate1) %>%
         ggplot(aes(x = TIMESTAMP, y = mm, fill=Water))+
-        geom_area()#+
+        geom_area(alpha=0.8) +
+        labs(x = "Time", y = "H20 (mm)", labels=c("Deep Well", "Snow", "Shalllow Well"))+ 
+        scale_fill_brewer()+
+        theme_dark()
+      
+        
       #scale_x_datetime(labels=date_format("%Y-%m-%d"), breaks = date_breaks("week"))
     })
     
