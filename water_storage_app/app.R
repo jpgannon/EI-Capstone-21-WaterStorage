@@ -121,9 +121,7 @@ ws3_upper_snowdat_hr <- read_csv("water_data_files/Water_table_WS3upper_WS_3Up_s
     mutate(H2O_Content_2_Avg = replace(H2O_Content_2_Avg, which(H2O_Content_2_Avg < 0), NA)) 
 
 #AW - adds a column with the average ignoring the NA 
-ws3_upper_snowdat_hr <- ws3_upper_snowdat_hr %>% 
-  mutate(VWC_average = rowMeans(ws3_upper_snowdat_hr[,c('H2O_Content_1_Avg','H2O_Content_2_Avg')],
-                                na.rm = TRUE ))
+
 
 #clean:
 ws3_upper_snowdat_hr$Depthcleaned <- cleanDepth(depth = ws3_upper_snowdat_hr$Depthscaled_Avg, cutoff1=-15, cutoff2=150, cutoff3=5)
@@ -139,7 +137,9 @@ ws3_upper_snowdat_hr$Depthcleaned <- cleanDepth(depth = ws3_upper_snowdat_hr$Dep
 #conditionally replace extremely low and extremely high air/snow temps with NAfor all colnames containing "RTD":
 ws3_upper_snowdat_hr[,grep("RTD", colnames(ws3_upper_snowdat_hr))] <- lapply(ws3_upper_snowdat_hr[,grep("RTD", colnames(ws3_upper_snowdat_hr))], function(x) replace(x, x > 50, NA))
 ws3_upper_snowdat_hr[,grep("RTD", colnames(ws3_upper_snowdat_hr))] <- lapply(ws3_upper_snowdat_hr[,grep("RTD", colnames(ws3_upper_snowdat_hr))], function(x) replace(x, x < -50, NA))
-
+ws3_upper_snowdat_hr <- ws3_upper_snowdat_hr %>% 
+  mutate(VWC_average = rowMeans(ws3_upper_snowdat_hr[,c('H2O_Content_1_Avg','H2O_Content_2_Avg')],
+                                na.rm = TRUE ))
 #reading in WS9 Snow 15 mins 
 # AW - currently the VWC is either 0 or NA for all entries 
 
@@ -174,11 +174,11 @@ ws9_upper_snowdat_hr <- read_csv("water_data_files/Water_table_WS9_WS_9_snowdat_
                                                          X11= "RTD_Avg(5)", X12=  "RTD_Avg(6)" , 
                                                          X13= "RTD_Avg(7)" , X14= "RTD_Avg(8)" , 
                                                          X15= "RTD_Avg(9)" , X16= "Air_TempC_Avg", 
-                                                         X17= "Depthraw_Avg" , X18= "Depthscaled_Avg")) %>% 
-  select(TIMESTAMP, H2O_Content_1_Avg, H2O_Content_2_Avg, Depthscaled_Avg) %>% 
-  mutate(H2O_Content_1_Avg = replace(H2O_Content_1_Avg, which(H2O_Content_1_Avg < 0), NA)) %>%   #AW - change the two H20 contents to NA for the negatives 
-  mutate(H2O_Content_2_Avg = replace(H2O_Content_2_Avg, which(H2O_Content_2_Avg < 0), NA)) 
-    
+                                                         X17= "Depthraw_Avg" , X18= "Depthscaled_Avg")) %>%   
+  select(TIMESTAMP, H2O_Content_1_Avg, H2O_Content_2_Avg, Depthscaled_Avg) %>%
+  mutate(H2O_Content_1_Avg = replace(H2O_Content_1_Avg, which(H2O_Content_1_Avg < 0), NA)) %>%   #AW - change the two H20 contents to NA for the negatives
+  mutate(H2O_Content_2_Avg = replace(H2O_Content_2_Avg, which(H2O_Content_2_Avg < 0), NA))
+
 
 #AW - adds a column with the average
 ws9_upper_snowdat_hr <- ws9_upper_snowdat_hr %>% 
