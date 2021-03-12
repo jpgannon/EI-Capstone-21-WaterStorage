@@ -105,22 +105,6 @@ ws3_upper_snowdat_hr <- read_csv("water_data_files/Water_table_WS3upper_WS_3Up_s
     mutate(H2O_Content_1_Avg = replace(H2O_Content_1_Avg, which(H2O_Content_1_Avg < 0), NA)) %>%   #AW - change the two H20 contents to NA for the negatives 
     mutate(H2O_Content_2_Avg = replace(H2O_Content_2_Avg, which(H2O_Content_2_Avg < 0), NA)) 
 
-#cleaning snow data further
-cleanDepth <- function(depth, cutoff1=-15, cutoff2=150, cutoff3=5){
-    
-    #replace extreme values:
-    depth[which(depth < cutoff1 | depth > cutoff2)] <- NA
-    
-    #remove unreasonable changes in depth:
-    depthDiffs <- c(NA, diff(depth))
-    depth[which(abs(depthDiffs) > cutoff3)] <- NA
-    
-    #Replace anything below zero with zero:
-    depth[which(depth <0)] <- 0
-    
-    return(depth)
-}
-
 
 #clean:
 ws3_upper_snowdat_hr$Depthcleaned <- cleanDepth(depth = ws3_upper_snowdat_hr$Depthscaled_Avg, cutoff1=-15, cutoff2=150, cutoff3=5)
@@ -218,6 +202,8 @@ ws9_upper_snowdat_hr[,grep("RTD", colnames(ws9_upper_snowdat_hr))] <- lapply(ws9
 ws9_upper_snowdat_hr <- ws9_upper_snowdat_hr %>% 
     mutate(VWC_average = rowMeans(ws9_upper_snowdat_hr[,c('H2O_Content_1_Avg','H2O_Content_2_Avg')],
                              na.rm = TRUE ))
+
+min_snow<- min(ws9_upper_snowdat_hr$H2O_Content_2_Avg)
 
 #AW - Read in precip & discharge data 
 
@@ -408,10 +394,16 @@ server <- function(input, output) {
     #MU: standardized snow ws9 data to mm H2O
     standardized_SnowHr_WS9 <- reactive({
         ws9_upper_snowdat_hr %>%
-            mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10)))
+            mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10))) 
         
     })
-    
+    #creat a var min value, divide by response range (max-min)
+    #pseudo 
+    ----
+      #var for min value
+      #var for max val
+      #mutate data (val - min) / (max - min)
+      #slider suggesting max value, only reactive with snow .... range min = current max, max= roughly 100% 
     #MU: standardized precip data ws3 to mm H2O
     
     
