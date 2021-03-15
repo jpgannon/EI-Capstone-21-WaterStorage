@@ -397,7 +397,6 @@ server <- function(input, output) {
     })
     #creat a var min value, divide by response range (max-min)
     #pseudo 
-    ----
       #var for min value
       #var for max val
       #mutate data (val - min) / (max - min)
