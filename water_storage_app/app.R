@@ -455,7 +455,9 @@ server <- function(input, output) {
       WS_discharge %>% 
         filter(Watershed == "WS3_Discharge" & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
         ggplot(aes(x = TIMESTAMP, y = Discharge)) +
-        geom_line()
+        geom_line()+
+        scale_fill_brewer()+
+        theme_dark()
       #MU: This is where discharge plot for WS3 goes.
     })
     
@@ -463,7 +465,9 @@ server <- function(input, output) {
       WS_discharge %>% 
         filter(Watershed == "W9_Discharge" & TIMESTAMP >= input$startdate1 & TIMESTAMP <= input$enddate1) %>% 
         ggplot(aes(x = TIMESTAMP, y = Discharge)) +
-        geom_line()
+        geom_line()+
+        scale_fill_brewer()+
+        theme_dark()
       #MU: This is where discharge plot for WS9 goes.
     })
 
@@ -472,7 +476,9 @@ server <- function(input, output) {
       WS_precip %>% 
         filter(Watershed == "W3_Precip" & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
         ggplot(aes(x = TIMESTAMP, y = Precip)) +
-        geom_bar(stat = "identity")
+        geom_bar(stat = "identity", fill="skyblue3")+
+        ylim(0, 0.6)+
+        theme_dark()
     })
     
     output$precip2 <- renderPlot({
@@ -480,7 +486,9 @@ server <- function(input, output) {
       WS_precip %>% 
         filter(Watershed == "W9_Precip" & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
         ggplot(aes(x = TIMESTAMP, y = Precip)) +
-        geom_bar(stat = "identity")
+        geom_bar(stat = "identity", fill="skyblue3")+
+        scale_fill_brewer()+
+        theme_dark()
     })
     
     # output$porosPlot <- renderPlot({
