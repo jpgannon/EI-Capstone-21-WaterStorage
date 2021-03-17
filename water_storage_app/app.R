@@ -320,7 +320,8 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                         mainPanel(
                                             plotOutput("plot1"),
                                             plotOutput("discharge1"),
-                                            plotOutput("precip1")
+                                            plotOutput("precip1"),
+                                            DTOutput("table1")
                                         )
                                     ) 
                            ),
@@ -343,18 +344,12 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                       mainPanel(
                                         plotOutput("plot2"),
                                         plotOutput("discharge2"),
-                                        plotOutput("precip2")
+                                        plotOutput("precip2"),
+                                        DTOutput("table2")
                                       )
                                   )
                             ),
                           
-                           tabPanel('Table View' ,
-                                    # selectInput("chooseTable", "Choose a Dataset:",
-                                    #             choices = list(WS_3 = ws3_standard(),
-                                    #                            WS_9 = ws9_standard())),
-                                    DTOutput("table")),
-                           
-                           
                            tabPanel('Map', leafletOutput("map",width = '100%'))
                            
 ))                          
@@ -417,13 +412,37 @@ server <- function(input, output) {
             select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well) %>%
             pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
             filter(TIMESTAMP > ymd("2020-12-16"))
+    
     })
-    output$table <- DT::renderDataTable({DT::datatable(ws3_standard(),#input$chooseTable, #MU: When we do the calculations we can put them in one dataset and output that.
+    
+    #Combines data to display on WS 3 page
+    ws3_full <- reactive({
+      full_join(standardized_Well_WS3(), standardized_SnowHr_WS3(), by = "TIMESTAMP") %>%
+        full_join(., WS3_Precip, by = "TIMESTAMP") %>% 
+        full_join(., WS3_weir, by = "TIMESTAMP") %>% 
+        select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well, ReportPCP, Discharge)
+    })
+    
+    #MU: Combines data to display on WS 9 page
+    ws9_full <- reactive({
+      full_join(standardized_Well_WS9(), standardized_SnowHr_WS9(), by = "TIMESTAMP") %>%
+        full_join(., WS9_Precip, by = "TIMESTAMP") %>% 
+        full_join(., WS9_weir, by = "TIMESTAMP") %>% 
+        select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well, ReportPCP, Discharge)
+    })
+    
+    output$table1 <- DT::renderDataTable({DT::datatable(ws3_full(),#input$chooseTable, #MU: When we do the calculations we can put them in one dataset and output that.
                                                        class = "display", #MU: this is the style of the table
-                                                       caption = 'Table 1: This table shows x.', #MU: adds a caption to the table
+                                                       caption = 'Table 1: This table shows precipitation, snow, discharge, and groundwater data for Watershed 3.', #MU: adds a caption to the table
                                                        filter = "top")
     })#MU: This places the filter at the top of the table
-    #MU: This is a placeholder table for when we finish cleaning the data and can input summarized values
+    
+    output$table2 <- DT::renderDataTable({DT::datatable(ws9_full(),#input$chooseTable, #MU: When we do the calculations we can put them in one dataset and output that.
+                                                        class = "display", #MU: this is the style of the table
+                                                        caption = 'Table 2: This table shows precipitation, snow, discharge, and groundwater data for Watershed 9.', #MU: adds a caption to the table
+                                                        filter = "top")
+    })#MU: This places the filter at the top of the table
+    
     output$plot1 <- renderPlot({
         ws3_standard() %>%
         #select(TIMESTAMP, standardized_well_2, standardized_deep_well, Depthcleaned) %>% 
