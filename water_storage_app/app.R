@@ -125,8 +125,8 @@ ws3_upper_snowdat_hr <- ws3_upper_snowdat_hr %>%
 #Find the min VWC value for WS 3 -AW 
 min_WS3snow<- min(ws3_upper_snowdat_hr$VWC_average, na.rm = TRUE)
 
-ws3_upper_snowdat_hr <- ws3_upper_snowdat_hr %>% 
-  mutate(VWC_average = (VWC_average- min_WS3snow)/range_WS3snow)
+#ws3_upper_snowdat_hr <- ws3_upper_snowdat_hr %>% 
+ # mutate(VWC_average = (VWC_average- min_WS3snow)/range_WS3snow)
 
 
 #clean:
@@ -402,14 +402,14 @@ server <- function(input, output) {
     #MU: standardized snow ws3 data to mm H2O
     standardized_SnowHr_WS3 <-  reactive({
         ws3_upper_snowdat_hr %>% 
-            mutate( VWC_average = ((VWC_average - min_WS3snow) / (input$maxVWC - min_WS3snow ))) %>% 
+            mutate(VWC_average = ((VWC_average - min_WS3snow) / (input$maxVWC - min_WS3snow ))) %>% 
             mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10)))
     })
     
     #MU: standardized snow ws9 data to mm H2O
     standardized_SnowHr_WS9 <- reactive({
         ws9_upper_snowdat_hr %>%
-            mutate( VWC_average = ((VWC_average - min_WS9snow) / (input$maxVWC1 - min_WS9snow ))) %>% 
+            mutate(VWC_average = ((VWC_average - min_WS9snow) / (input$maxVWC1 - min_WS9snow ))) %>% 
             mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10))) 
         
     })
