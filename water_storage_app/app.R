@@ -54,7 +54,8 @@ ws9_upper_wells <- read_csv("water_data_files/Water_table_WS9_WS_9_wells.dat",
                                                     X15= "HB176d_psi" , X16= "HB176d_rawdepth", 
                                                     X17= "HB176d_depth_corr" , X18= "HB176d_corr_depth", 
                                                     X19 = "HB176d_welltemp"))%>%
-    select(TIMESTAMP, HB156_corr_depth, HB179s_corr_depth, HB176d_corr_depth) 
+    select(TIMESTAMP, HB156_corr_depth, HB179s_corr_depth, HB176d_corr_depth) %>% 
+    filter(TIMESTAMP > "2021-01-20")
 
 ws9_upper_wells <-  ws9_upper_wells %>%
     group_by(year = year(TIMESTAMP), month = month(TIMESTAMP), day = day(TIMESTAMP), hour = hour(TIMESTAMP)) %>% 
@@ -93,9 +94,7 @@ ws3_upper_snowdat15mins <- read_csv("water_data_files/Water_table_WS3upper_WS_3U
                                                             X15= "RTD(7)" , X16= "RTD(8)", X17= "RTD(9)" , 
                                                             X18= "Air_TempC_Avg", X19 = "Depthraw", 
                                                             X20= "Depthscaled"))%>%
-    select(TIMESTAMP, H2O_Content_1, H2O_Content_2, Depthscaled) %>% 
-    mutate(H2O_Content_1 = replace(H2O_Content_1, which(H2O_Content_1 < 0), NA)) %>%   #AW - change the two H20 contents to NA for the negatives 
-    mutate(H2O_Content_2 = replace(H2O_Content_2, which(H2O_Content_2 < 0), NA)) 
+    select(TIMESTAMP, H2O_Content_1, H2O_Content_2, Depthscaled) 
 
 #AW - adds a column with the average ignoring the NA 
 ws3_upper_snowdat15mins <- ws3_upper_snowdat15mins %>% 
@@ -116,14 +115,19 @@ ws3_upper_snowdat_hr <- read_csv("water_data_files/Water_table_WS3upper_WS_3Up_s
                                                          X14= "RTD_Avg(8)" , X15= "RTD_Avg(9)" , 
                                                          X16= "Air_TempC_Avg", X17= "Depthraw_Avg" , 
                                                          X18= "Depthscaled_Avg"))%>%
-    select(TIMESTAMP, H2O_Content_1_Avg, H2O_Content_2_Avg, Depthscaled_Avg) %>% 
-    mutate(H2O_Content_1_Avg = replace(H2O_Content_1_Avg, which(H2O_Content_1_Avg < 0), NA)) %>%   #AW - change the two H20 contents to NA for the negatives 
-    mutate(H2O_Content_2_Avg = replace(H2O_Content_2_Avg, which(H2O_Content_2_Avg < 0), NA)) 
+    select(TIMESTAMP, H2O_Content_1_Avg, H2O_Content_2_Avg, Depthscaled_Avg) 
 
 #AW - adds a column with the average ignoring the NA 
 ws3_upper_snowdat_hr <- ws3_upper_snowdat_hr %>% 
   mutate(VWC_average = rowMeans(ws3_upper_snowdat_hr[,c('H2O_Content_1_Avg','H2O_Content_2_Avg')],
                                 na.rm = TRUE ))
+
+#Find the min VWC value for WS 3 -AW 
+min_WS3snow<- min(ws3_upper_snowdat_hr$VWC_average, na.rm = TRUE)
+
+ws3_upper_snowdat_hr <- ws3_upper_snowdat_hr %>% 
+  mutate(VWC_average = (VWC_average- min_WS3snow)/range_WS3snow)
+
 
 #clean:
 ws3_upper_snowdat_hr$Depthcleaned <- cleanDepth(depth = ws3_upper_snowdat_hr$Depthscaled_Avg, cutoff1=-15, cutoff2=150, cutoff3=5)
@@ -155,8 +159,8 @@ ws9_upper_snowdat15mins <- read_csv("water_data_files/Water_table_WS9_WS_9_snowd
                                                             X18= "Air_TempC_Avg", X19 = "Depthraw", 
                                                             X20= "Depthscaled"))%>%
     select(TIMESTAMP, H2O_Content_1, H2O_Content_2, Depthscaled) %>% 
-    mutate(H2O_Content_1 = replace(H2O_Content_1, which(H2O_Content_1 < 0), NA)) %>%   #AW - change the two H20 contents to NA for the negatives 
-    mutate(H2O_Content_2 = replace(H2O_Content_2, which(H2O_Content_2 < 0), NA)) 
+    filter(TIMESTAMP > "2021-01-20")
+
 
 #AW - adds a column with the average ignoring the NA 
 ws9_upper_snowdat15mins <- ws9_upper_snowdat15mins %>% 
@@ -176,14 +180,16 @@ ws9_upper_snowdat_hr <- read_csv("water_data_files/Water_table_WS9_WS_9_snowdat_
                                                          X15= "RTD_Avg(9)" , X16= "Air_TempC_Avg", 
                                                          X17= "Depthraw_Avg" , X18= "Depthscaled_Avg")) %>% 
   select(TIMESTAMP, H2O_Content_1_Avg, H2O_Content_2_Avg, Depthscaled_Avg) %>% 
-  mutate(H2O_Content_1_Avg = replace(H2O_Content_1_Avg, which(H2O_Content_1_Avg < 0), NA)) %>%   #AW - change the two H20 contents to NA for the negatives 
-  mutate(H2O_Content_2_Avg = replace(H2O_Content_2_Avg, which(H2O_Content_2_Avg < 0), NA)) 
-    
+  filter(TIMESTAMP > "2021-01-20")
+
 
 #AW - adds a column with the average
 ws9_upper_snowdat_hr <- ws9_upper_snowdat_hr %>% 
   mutate(VWC_average = rowMeans(ws9_upper_snowdat_hr[,c('H2O_Content_1_Avg','H2O_Content_2_Avg')],
                                 na.rm = TRUE ))
+
+#Find the min for VWC value for WS 9 -AW 
+min_WS9snow<- min(ws9_upper_snowdat_hr$VWC_average, na.rm = TRUE)
 
 #clean:
 ws9_upper_snowdat_hr$Depthcleaned <- cleanDepth(depth = ws9_upper_snowdat_hr$Depthscaled_Avg, cutoff1=-15, cutoff2=150, cutoff3=5)
@@ -200,8 +206,6 @@ ws9_upper_snowdat_hr$Depthcleaned <- cleanDepth(depth = ws9_upper_snowdat_hr$Dep
 ws9_upper_snowdat_hr[,grep("RTD", colnames(ws9_upper_snowdat_hr))] <- lapply(ws9_upper_snowdat_hr[,grep("RTD", colnames(ws9_upper_snowdat_hr))], function(x) replace(x, x > 50, NA))
 ws9_upper_snowdat_hr[,grep("RTD", colnames(ws9_upper_snowdat_hr))] <- lapply(ws9_upper_snowdat_hr[,grep("RTD", colnames(ws9_upper_snowdat_hr))], function(x) replace(x, x < -50, NA))
 
-
-#min_snow<- min(ws9_upper_snowdat_hr$H2O_Content_2_Avg)
 
 #AW - Read in precip & discharge data 
 
@@ -230,7 +234,8 @@ WS9_weir <- read_csv("water_data_files/weir9_Ws_9b.dat",
   summarise(Discharge = mean(Discharge)) %>%
   ungroup() %>%
   mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
-  select(-c(month, day, year, hour), TIMESTAMP, Discharge)
+  select(-c(month, day, year, hour), TIMESTAMP, Discharge) %>% 
+  filter(TIMESTAMP > "2021-01-20")
 
 WS9_Precip <- read_csv("water_data_files/rrg19_Rg_19-2019-08-09.dat", 
                        skip = 4, 
@@ -244,7 +249,9 @@ WS9_Precip <- read_csv("water_data_files/rrg19_Rg_19-2019-08-09.dat",
   ungroup() %>%
   mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
   select(-c(month, day, year, hour), TIMESTAMP, ReportPCP) %>% 
-  mutate(ReportPCP = ReportPCP * 10)
+  mutate(ReportPCP = ReportPCP * 10) %>% 
+  filter(TIMESTAMP > "2021-01-20")
+
 
 WS3_Precip <- read_csv("water_data_files/wxsta1_Wx_1_rain.dat", 
                        skip = 4, 
@@ -314,8 +321,11 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                                                   0.1, step = 0.1, min = 0, max = 1),
                                                      numericInput("porosPM","Parent Material Porosity:",
                                                                   0.1, step = 0.1, min = 0, max = 1),
+                                                     numericInput("maxVWC","Maximum Volumentric Water Content:",
+                                                                  0.1, step = 0.1, min = 0, max = 1),
                                                      verbatimTextOutput("valueSoil"),
                                                      verbatimTextOutput("valuePM"),
+                                                     verbatimTextOutput("maxVWC"),
                                                      fluid = TRUE),
                                         mainPanel(
                                           fluidRow(
@@ -342,8 +352,11 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                                               0.1, step = 0.1, min = 0, max = 1),
                                                  numericInput("porosPM1","Parent Material Porosity:",
                                                               0.1, step = 0.1, min = 0, max = 1),
+                                                 numericInput("maxVWC1","Maximum Volumentric Water Content:",
+                                                              0.1, step = 0.1, min = 0, max = 1),
                                                  verbatimTextOutput("valueSoil1"),
                                                  verbatimTextOutput("valuePM1"),
+                                                 verbatimTextOutput("maxVWC1"),
                                                  fluid = TRUE),
                                       mainPanel(
                                         fluidRow(
@@ -389,12 +402,14 @@ server <- function(input, output) {
     #MU: standardized snow ws3 data to mm H2O
     standardized_SnowHr_WS3 <-  reactive({
         ws3_upper_snowdat_hr %>% 
+            mutate( VWC_average = ((VWC_average - min_WS3snow) / (input$maxVWC - min_WS3snow ))) %>% 
             mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10)))
     })
     
     #MU: standardized snow ws9 data to mm H2O
     standardized_SnowHr_WS9 <- reactive({
         ws9_upper_snowdat_hr %>%
+            mutate( VWC_average = ((VWC_average - min_WS9snow) / (input$maxVWC1 - min_WS9snow ))) %>% 
             mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10))) 
         
     })
