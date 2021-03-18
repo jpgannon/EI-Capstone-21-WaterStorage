@@ -125,9 +125,6 @@ ws3_upper_snowdat_hr <- ws3_upper_snowdat_hr %>%
 #Find the min VWC value for WS 3 -AW 
 min_WS3snow<- min(ws3_upper_snowdat_hr$VWC_average, na.rm = TRUE)
 
-#ws3_upper_snowdat_hr <- ws3_upper_snowdat_hr %>% 
- # mutate(VWC_average = (VWC_average- min_WS3snow)/range_WS3snow)
-
 
 #clean:
 ws3_upper_snowdat_hr$Depthcleaned <- cleanDepth(depth = ws3_upper_snowdat_hr$Depthscaled_Avg, cutoff1=-15, cutoff2=150, cutoff3=5)
