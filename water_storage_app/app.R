@@ -318,10 +318,14 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                                      verbatimTextOutput("valuePM"),
                                                      fluid = TRUE),
                                         mainPanel(
-                                            plotOutput("plot1"),
-                                            plotOutput("discharge1"),
-                                            plotOutput("precip1"),
-                                            DTOutput("table1")
+                                          fluidRow(
+                                            plotOutput("plot1")),
+                                          fluidRow(
+                                            plotOutput("discharge1")),
+                                          fluidRow(
+                                            plotOutput("precip1")),
+                                          fluidRow(
+                                            DTOutput("table1"))
                                         )
                                     ) 
                            ),
@@ -342,10 +346,14 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                                  verbatimTextOutput("valuePM1"),
                                                  fluid = TRUE),
                                       mainPanel(
-                                        plotOutput("plot2"),
-                                        plotOutput("discharge2"),
-                                        plotOutput("precip2"),
-                                        DTOutput("table2")
+                                        fluidRow(
+                                          plotOutput("plot2")),
+                                        fluidRow(
+                                          plotOutput("discharge2")),
+                                        fluidRow(
+                                          plotOutput("precip2")),
+                                        fluidRow(
+                                          DTOutput("table2"))
                                       )
                                   )
                             ),
