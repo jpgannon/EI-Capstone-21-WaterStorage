@@ -368,6 +368,7 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                   )
                             ),
                           
+                           tabPanel('Comparative Watershed Data'),
                            tabPanel('Map', leafletOutput("map",width = '100%'))
                            
 ))                          
