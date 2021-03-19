@@ -246,8 +246,7 @@ WS9_Precip <- read_csv("water_data_files/rrg19_Rg_19-2019-08-09.dat",
   ungroup() %>%
   mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
   select(-c(month, day, year, hour), TIMESTAMP, ReportPCP) %>% 
-  mutate(ReportPCP = ReportPCP * 10) %>% 
-  filter(TIMESTAMP > "2021-01-21")
+  mutate(ReportPCP = ReportPCP * 10)
 
 
 WS3_Precip <- read_csv("water_data_files/wxsta1_Wx_1_rain.dat", 
@@ -542,7 +541,7 @@ server <- function(input, output) {
         ggplot(aes(x = TIMESTAMP, y = Precip)) +
         geom_bar(stat = "identity", fill="skyblue3")+
         scale_fill_brewer()+
-        labs(y="Precipitation (mm)")
+        labs(y="Precipitation (mm)")+
         theme_dark()+
         theme(axis.title.x = element_blank())
       
