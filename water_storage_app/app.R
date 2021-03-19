@@ -301,10 +301,10 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                    and a table. The data can also be filtered using the various filters found in each tab.")),
                                     fluidRow(
                                         tags$p("Map Credit: Hubbard Brook Experimental Forest"),
-                                        tags$p("This application will attempt to:
-                    - Visualize Realtime and Past Watershed Data.
-                    - Create a user-friendly dashboard that allows for data exploration.
-                    - Assist Hubbard Brook Scientists in testing hypothetical data and results.")
+                                        tags$ul("This application will attempt to:"),
+                                                tags$li("Visualize Realtime and Past Watershed Storage Data Using Joined and Normalized Datasets."),
+                                                tags$li("Create a user-friendly dashboard that allows for data exploration."),
+                                                tags$li("Assist Hubbard Brook Scientists in testing hypothetical data and results.")
                                     )),
                            tabPanel('Watershed 3',
                                     sidebarLayout(
@@ -399,15 +399,15 @@ server <- function(input, output) {
     #MU: standardized snow ws3 data to mm H2O
     standardized_SnowHr_WS3 <-  reactive({
         ws3_upper_snowdat_hr %>% 
-            mutate(VWC_norm = ((VWC_average - min_WS3snow) / (input$maxVWC - min_WS3snow ))) %>% 
-            mutate(standardized_snow = (VWC_norm * (Depthscaled_Avg * 10)))
+            mutate(VWC_average = ((VWC_average - min_WS3snow) / (input$maxVWC - min_WS3snow ))) %>% 
+            mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10)))
     })
     
     #MU: standardized snow ws9 data to mm H2O
     standardized_SnowHr_WS9 <- reactive({
         ws9_upper_snowdat_hr %>%
-            mutate(VWC_norm = ((VWC_average - min_WS9snow) / (input$maxVWC1 - min_WS9snow ))) %>% 
-            mutate(standardized_snow = (VWC_norm * (Depthscaled_Avg * 10))) 
+            mutate(VWC_average = ((VWC_average - min_WS9snow) / (input$maxVWC1 - min_WS9snow ))) %>% 
+            mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10))) 
         
     })
     #creat a var min value, divide by response range (max-min)
@@ -468,7 +468,7 @@ server <- function(input, output) {
         #select(TIMESTAMP, standardized_well_2, standardized_deep_well, Depthcleaned) %>% 
             filter(mm > 0 & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
             ggplot(aes(x = TIMESTAMP, y = mm, fill=Water))+
-            geom_area(alpha=0.8) +
+            geom_area() +
         labs(x = "Time", y = "H20 (mm)")+
         scale_fill_brewer()+
         theme_dark()+ 
@@ -482,7 +482,7 @@ server <- function(input, output) {
       ws9_standard() %>%
         filter(mm > 0 & TIMESTAMP >= input$startdate1 & TIMESTAMP <= input$enddate1) %>%
         ggplot(aes(x = TIMESTAMP, y = mm, fill=Water))+
-        geom_area(alpha=0.8) +
+        geom_area() +
         labs(x = "Time", y = "H20 (mm)", labels=c("Deep Well", "Snow", "Shalllow Well"))+ 
         scale_fill_brewer()+
         theme_dark()+
