@@ -232,7 +232,7 @@ WS9_weir <- read_csv("water_data_files/weir9_Ws_9b.dat",
   ungroup() %>%
   mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
   select(-c(month, day, year, hour), TIMESTAMP, Discharge) %>% 
-  filter(TIMESTAMP > "2021-01-20")
+  filter(TIMESTAMP > "2021-01-21")
 
 WS9_Precip <- read_csv("water_data_files/rrg19_Rg_19-2019-08-09.dat", 
                        skip = 4, 
@@ -247,7 +247,7 @@ WS9_Precip <- read_csv("water_data_files/rrg19_Rg_19-2019-08-09.dat",
   mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
   select(-c(month, day, year, hour), TIMESTAMP, ReportPCP) %>% 
   mutate(ReportPCP = ReportPCP * 10) %>% 
-  filter(TIMESTAMP > "2021-01-20")
+  filter(TIMESTAMP > "2021-01-21")
 
 
 WS3_Precip <- read_csv("water_data_files/wxsta1_Wx_1_rain.dat", 
@@ -262,7 +262,8 @@ WS3_Precip <- read_csv("water_data_files/wxsta1_Wx_1_rain.dat",
   ungroup() %>%
   mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
   select(-c(month, day, year, hour), TIMESTAMP, ReportPCP) %>% 
-  mutate(ReportPCP = ReportPCP * 10)
+  mutate(ReportPCP = ReportPCP * 10) %>% 
+  filter(TIMESTAMP > "2021-01-21")
 
 
 #AW - full join and pivot longer for the WS 3 & 9 precipitation data 
@@ -309,7 +310,7 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                            tabPanel('Watershed 3',
                                     sidebarLayout(
                                         sidebarPanel(width = 3,
-                                                     dateInput("startdate", label = "Start Date", val= "2020-12-16"), #MU: Should we make the default start value the first data present in the data we read in?
+                                                     dateInput("startdate", label = "Start Date", val= "2021-01-21"), #MU: Should we make the default start value the first data present in the data we read in?
                                                      dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
                                                      # selectInput(inputId = "toview", label = "Select dataset to view:", 
                                                      #             choices = unique(ws3_standard$name), 
@@ -340,7 +341,7 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                            tabPanel('Watershed 9',
                                     sidebarLayout(
                                     sidebarPanel(width = 3,
-                                                 dateInput("startdate1", label = "Start Date", val= "2020-12-16"), #MU: Should we make the default start value the first data present in the data we read in?
+                                                 dateInput("startdate1", label = "Start Date", val= "2021-01-21"), #MU: Should we make the default start value the first data present in the data we read in?
                                                  dateInput("enddate1", label= "End Date", value=Sys.Date(), max=Sys.Date()),
                                                  # selectInput(inputId = "toview", label = "Select dataset to view:",
                                                  #             choices = unique(ws3_standard$name),
@@ -472,7 +473,9 @@ server <- function(input, output) {
         labs(x = "Time", y = "H20 (mm)")+
         scale_fill_brewer()+
         theme_dark()+ 
-        theme(legend.position="bottom")
+        theme(legend.position="bottom")+
+        theme(axis.title.x = element_blank())
+      
         
         #scale_x_datetime(labels=date_format("%Y-%m-%d"), breaks = date_breaks("week"))
     })
@@ -484,7 +487,10 @@ server <- function(input, output) {
         labs(x = "Time", y = "H20 (mm)", labels=c("Deep Well", "Snow", "Shalllow Well"))+ 
         scale_fill_brewer()+
         theme_dark()+
-        theme(legend.position="bottom")
+        theme(legend.position="bottom")+
+        theme(axis.title.x = element_blank())
+      
+      
       
         
       #scale_x_datetime(labels=date_format("%Y-%m-%d"), breaks = date_breaks("week"))
@@ -495,8 +501,11 @@ server <- function(input, output) {
         filter(Watershed == "WS3_Discharge" & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
         ggplot(aes(x = TIMESTAMP, y = Discharge)) +
         geom_line()+
+        labs(y="Discharge (mm)")+
         scale_fill_brewer()+
-        theme_dark()
+        theme_dark()+
+        theme(axis.title.x = element_blank())
+      
       #MU: This is where discharge plot for WS3 goes.
     })
     
@@ -505,8 +514,11 @@ server <- function(input, output) {
         filter(Watershed == "W9_Discharge" & TIMESTAMP >= input$startdate1 & TIMESTAMP <= input$enddate1) %>% 
         ggplot(aes(x = TIMESTAMP, y = Discharge)) +
         geom_line()+
+        labs(y="Discharge (mm)")+
         scale_fill_brewer()+
-        theme_dark()
+        theme_dark()+ 
+        theme(axis.title.x = element_blank())
+      
       #MU: This is where discharge plot for WS9 goes.
     })
 
@@ -516,8 +528,11 @@ server <- function(input, output) {
         filter(Watershed == "W3_Precip" & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
         ggplot(aes(x = TIMESTAMP, y = Precip)) +
         geom_bar(stat = "identity", fill="skyblue3")+
+        labs(y="Precipitation (mm)")+
         ylim(0, 0.6)+
-        theme_dark()
+        theme_dark()+
+        theme(axis.title.x = element_blank())
+      
     })
     
     output$precip2 <- renderPlot({
@@ -527,7 +542,10 @@ server <- function(input, output) {
         ggplot(aes(x = TIMESTAMP, y = Precip)) +
         geom_bar(stat = "identity", fill="skyblue3")+
         scale_fill_brewer()+
-        theme_dark()
+        labs(y="Precipitation (mm)")
+        theme_dark()+
+        theme(axis.title.x = element_blank())
+      
     })
     
     # output$porosPlot <- renderPlot({
