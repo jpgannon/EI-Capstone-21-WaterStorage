@@ -399,15 +399,15 @@ server <- function(input, output) {
     #MU: standardized snow ws3 data to mm H2O
     standardized_SnowHr_WS3 <-  reactive({
         ws3_upper_snowdat_hr %>% 
-            mutate(VWC_average = ((VWC_average - min_WS3snow) / (input$maxVWC - min_WS3snow ))) %>% 
-            mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10)))
+            mutate(VWC_norm = ((VWC_average - min_WS3snow) / (input$maxVWC - min_WS3snow ))) %>% 
+            mutate(standardized_snow = (VWC_norm * (Depthscaled_Avg * 10)))
     })
     
     #MU: standardized snow ws9 data to mm H2O
     standardized_SnowHr_WS9 <- reactive({
         ws9_upper_snowdat_hr %>%
-            mutate(VWC_average = ((VWC_average - min_WS9snow) / (input$maxVWC1 - min_WS9snow ))) %>% 
-            mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10))) 
+            mutate(VWC_norm = ((VWC_average - min_WS9snow) / (input$maxVWC1 - min_WS9snow ))) %>% 
+            mutate(standardized_snow = (VWC_norm * (Depthscaled_Avg * 10))) 
         
     })
     #creat a var min value, divide by response range (max-min)
