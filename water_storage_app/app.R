@@ -304,8 +304,9 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                         tags$ul("This application will attempt to:"),
                                                 tags$li("Visualize Realtime and Past Watershed Storage Data Using Joined and Normalized Datasets."),
                                                 tags$li("Create a user-friendly dashboard that allows for data exploration."),
-                                                tags$li("Assist Hubbard Brook Scientists in testing hypothetical data and results.")
-                                    )),
+                                                tags$li("Assist Hubbard Brook Scientists in testing hypothetical data and results.")), 
+                                    fluidRow(leafletOutput("map",width = '80%'))
+                                    ),
                            tabPanel('Watershed 3',
                                     sidebarLayout(
                                         sidebarPanel(width = 3,
@@ -318,7 +319,7 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                                                   0.1, step = 0.1, min = 0, max = 1),
                                                      numericInput("porosPM","Parent Material Porosity:",
                                                                   0.1, step = 0.1, min = 0, max = 1),
-                                                     numericInput("maxVWC","Maximum Volumentric Water Content:",
+                                                     numericInput("maxVWC","Maximum VWC:",
                                                                   0.1, step = 0.1, min = 0, max = 1),
                                                      verbatimTextOutput("valueSoil"),
                                                      verbatimTextOutput("valuePM"),
@@ -349,7 +350,7 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                                               0.1, step = 0.1, min = 0, max = 1),
                                                  numericInput("porosPM1","Parent Material Porosity:",
                                                               0.1, step = 0.1, min = 0, max = 1),
-                                                 numericInput("maxVWC1","Maximum Volumentric Water Content:",
+                                                 numericInput("maxVWC1","Maximum VWC:",
                                                               0.1, step = 0.1, min = 0, max = 1),
                                                  verbatimTextOutput("valueSoil1"),
                                                  verbatimTextOutput("valuePM1"),
@@ -368,9 +369,41 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                   )
                             ),
                           
-                           tabPanel('Comparative Watershed Data'),
-                           tabPanel('Map', leafletOutput("map",width = '100%'))
-                           
+                           tabPanel('Comparative Watershed Data', 
+                                    sidebarLayout(
+                                      sidebarPanel(width = 3,
+                                                   dateInput("startdate2", label = "Start Date", val= "2021-01-21"), #MU: Should we make the default start value the first data present in the data we read in?
+                                                   dateInput("enddate2", label= "End Date", value=Sys.Date(), max=Sys.Date()),
+                                                   # selectInput("select", "Select variable:", 
+                                                   #             choices = 
+                                                   #               c(standardized_Well_WS3$standardized_well_2 = "WS3 Well 3", 
+                                                   #                 standardized_Well_WS9$standardized_well_2= "WS9 Well 9")),
+                                                   #filters for WS 3 
+                                                   numericInput("porosSoil_WS3","WS3 Soil Porosity:",
+                                                                0.1, step = 0.1, min = 0, max = 1),
+                                                   numericInput("porosPM_WS3","WS3 Parent Material Porosity:",
+                                                                0.1, step = 0.1, min = 0, max = 1),
+                                                   numericInput("maxVWC_WS3","WS3 Maximum VWC:",
+                                                                0.1, step = 0.1, min = 0, max = 1),
+                                                   verbatimTextOutput("valueSoil_WS3"),
+                                                   verbatimTextOutput("valuePM_WS3"),
+                                                   verbatimTextOutput("maxVWC_WS3"),
+                                                   #filters for WS9
+                                                   numericInput("porosSoil_WS9","WS9 Soil Porosity:",
+                                                                0.1, step = 0.1, min = 0, max = 1),
+                                                   numericInput("porosPM_WS9","WS9 Parent Material Porosity:",
+                                                                0.1, step = 0.1, min = 0, max = 1),
+                                                   numericInput("maxVWC_WS9","WS9 Maximum VWC:",
+                                                                0.1, step = 0.1, min = 0, max = 1),
+                                                   verbatimTextOutput("valueSoil_WS9"),
+                                                   verbatimTextOutput("valuePM_WS9"),
+                                                   verbatimTextOutput("maxVWC_WS9"),
+                                                   
+                                                   fluid = TRUE),
+                                      mainPanel(
+                                      #line plots for comparing the two watersheds 
+                                      )
+                                    ))
 ))                          
 
 
@@ -411,14 +444,6 @@ server <- function(input, output) {
             mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10))) 
         
     })
-    #creat a var min value, divide by response range (max-min)
-    #pseudo 
-      #var for min value
-      #var for max val
-      #mutate data (val - min) / (max - min)
-      #slider suggesting max value, only reactive with snow .... range min = current max, max= roughly 100% 
-    #MU: standardized precip data ws3 to mm H2O
-    
     
     #MU: joined ws3 data
     ws3_standard <- reactive ({
@@ -489,9 +514,6 @@ server <- function(input, output) {
         theme_dark()+
         theme(legend.position="bottom")+
         theme(axis.title.x = element_blank())
-      
-      
-      
         
       #scale_x_datetime(labels=date_format("%Y-%m-%d"), breaks = date_breaks("week"))
     })
@@ -548,13 +570,6 @@ server <- function(input, output) {
       
     })
     
-    # output$porosPlot <- renderPlot({
-    #     x <- seq(from = 0, to = 100, by = 0.1)
-    #     y <- x*input$poros2 + input$change
-    #     plot(x,y)
-    # })
-    
-    
     # Plot map of station locations using leaflet
     #---------------------------------------------
     
@@ -562,15 +577,10 @@ server <- function(input, output) {
         addProviderTiles("OpenTopoMap", options = providerTileOptions(noWrap = TRUE)) %>% 
         addMarkers(lng= -71.7185, lat = 43.9403, popup = "Hubbard Brook Experimental Forest")
     
-    output$map <- renderLeaflet(
-        m
-    )
+    output$map <- renderLeaflet(m)
     
     #---------------------------------------------
 } # END Server function
-#---------------------------------------------
-#---------------------------------------------
-
 
 # Run the application 
 shinyApp(ui = ui, server = server)
