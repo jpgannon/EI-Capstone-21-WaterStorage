@@ -305,7 +305,7 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                                 tags$li("Visualize Realtime and Past Watershed Storage Data Using Joined and Normalized Datasets."),
                                                 tags$li("Create a user-friendly dashboard that allows for data exploration."),
                                                 tags$li("Assist Hubbard Brook Scientists in testing hypothetical data and results.")), 
-                                    fluidRow(leafletOutput("map",width = '80%'))
+                                    fluidRow(leafletOutput("map",width = '100%'))
                                     ),
                            tabPanel('Watershed 3',
                                     sidebarLayout(
@@ -402,6 +402,10 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                                    fluid = TRUE),
                                       mainPanel(
                                       #line plots for comparing the two watersheds 
+                                        fluidRow(
+                                          plotOutput("dis_compare")),
+                                        fluidRow(
+                                          plotOutput("precip_compare"))
                                       )
                                     ))
 ))                          
@@ -569,6 +573,33 @@ server <- function(input, output) {
         theme(axis.title.x = element_blank())
       
     })
+    
+    output$precip_compare <- renderPlot ({
+      WS_precip %>%
+      filter(TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
+        ggplot(aes(x = TIMESTAMP, y = Precip, group = Watershed)) +
+        geom_line(aes(color=Watershed))+
+        scale_fill_brewer()+
+        labs(y="Precipitation (mm)")+
+        theme_dark()+
+        theme(axis.title.x = element_blank())+
+        theme(legend.position="bottom")
+    }) 
+    
+    output$dis_compare <- renderPlot({
+      WS_discharge %>% 
+        filter(TIMESTAMP >= input$startdate1 & TIMESTAMP <= input$enddate1) %>% 
+        ggplot(aes(x = TIMESTAMP, y = Discharge, group = Watershed)) +
+        geom_line(aes(color=Watershed))+
+        labs(y="Discharge (mm)")+
+        scale_fill_brewer()+
+        theme_dark()+ 
+        theme(axis.title.x = element_blank())+
+        theme(legend.position="bottom")
+      
+      #MU: This is where discharge plot for WS9 goes.
+    })
+    
     
     # Plot map of station locations using leaflet
     #---------------------------------------------
