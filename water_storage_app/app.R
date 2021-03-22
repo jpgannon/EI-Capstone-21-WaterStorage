@@ -376,10 +376,11 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                       sidebarPanel(width = 3,
                                                    dateInput("startdate2", label = "Start Date", val= "2021-01-21"), #MU: Should we make the default start value the first data present in the data we read in?
                                                    dateInput("enddate2", label= "End Date", value=Sys.Date(), max=Sys.Date()),
-                                                   # selectInput("select", "Select variable:", 
-                                                   #             choices = 
-                                                   #               c(standardized_Well_WS3$standardized_well_2 = "WS3 Well 3", 
-                                                   #                 standardized_Well_WS9$standardized_well_2= "WS9 Well 9")),
+                                                   varSelectInput("variables", "Select Data to Compare:",
+                                                                  standard_full(), multiple = TRUE),
+                                                   # selectInput(inputId = "compare", label = "Select dataset to view:",
+                                                   #             unique(standard_full()$Snow_Well), 
+                                                   #             selected = unique(standard_full()$Snow_Well)[1]),
                                                    #filters for WS 3 
                                                    numericInput("porosSoil_WS3","WS3 Soil Porosity:",
                                                                 0.1, step = 0.1, min = 0, max = 1),
@@ -400,10 +401,11 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                                    verbatimTextOutput("valueSoil_WS9"),
                                                    verbatimTextOutput("valuePM_WS9"),
                                                    verbatimTextOutput("maxVWC_WS9"),
-                                                   
                                                    fluid = TRUE),
                                       mainPanel(
                                       #line plots for comparing the two watersheds 
+                                        fluidRow(
+                                          plotOutput("compare")),
                                         fluidRow(
                                           plotOutput("dis_compare")),
                                         fluidRow(
@@ -425,7 +427,7 @@ server <- function(input, output) {
             mutate(standardized_well_1 = ((WS3_N1_corr_depth * 10) * input$porosSoil)) %>% 
             mutate(standardized_well_2 = ((WS3_N2_corr_depth * 10) * input$porosSoil)) %>% 
             mutate(standardized_deep_well = ((WS3_42_4_d2_corr_depth * 10) * input$porosPM)) %>%
-            select(TIMESTAMP, standardized_well_1, standardized_well_2, standardized_deep_well)
+            select(TIMESTAMP, standardized_well_2, standardized_deep_well)
     })
     #Mu: standardized well ws9 data to mm H2O
     standardized_Well_WS9 <-  reactive({
@@ -433,21 +435,24 @@ server <- function(input, output) {
             mutate(standardized_well_1 = ((HB156_corr_depth * 10) * input$porosSoil1)) %>% 
             mutate(standardized_well_2 = ((HB179s_corr_depth * 10) * input$porosSoil1)) %>% 
             mutate(standardized_deep_well = ((HB176d_corr_depth * 10) * input$porosPM1)) %>%
-            select(TIMESTAMP, standardized_well_1, standardized_well_2, standardized_deep_well)
+            select(TIMESTAMP, standardized_well_2, standardized_deep_well)
     })
+    
     
     #MU: standardized snow ws3 data to mm H2O
     standardized_SnowHr_WS3 <-  reactive({
         ws3_upper_snowdat_hr %>% 
             mutate(VWC_average = ((VWC_average - min_WS3snow) / (input$maxVWC - min_WS3snow ))) %>% 
-            mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10)))
+            mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10))) %>% 
+            select(TIMESTAMP, standardized_snow)
     })
     
     #MU: standardized snow ws9 data to mm H2O
     standardized_SnowHr_WS9 <- reactive({
         ws9_upper_snowdat_hr %>%
             mutate(VWC_average = ((VWC_average - min_WS9snow) / (input$maxVWC1 - min_WS9snow ))) %>% 
-            mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10))) 
+            mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10))) %>% 
+            select(TIMESTAMP, standardized_snow)
         
     })
     
@@ -466,6 +471,12 @@ server <- function(input, output) {
             filter(TIMESTAMP > ymd("2020-12-16"))
     
     })
+    
+    standard_full <- reactive ({
+      full_join(ws3_standard(), ws9_standard(), by = "TIMESTAMP") %>%
+      `colnames<-`(c("ws3_snow", "ws3_shallow_well", "ws3_deep_well", "TIMESTAMP", "ws9_snow", "ws9_shallow_well", "ws9_deep_well")) 
+   
+       })
     
     #Combines data to display on WS 3 page
     ws3_full <- reactive({
@@ -575,6 +586,19 @@ server <- function(input, output) {
         theme(axis.title.x = element_blank())
       
     })
+    
+    # output$compare <- renderPlot ({
+    #   standard_full() %>%
+    #     filter(TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
+    #     ggplot(aes(x = TIMESTAMP, y = Precip, group = Watershed)) +
+    #     geom_line(aes(color=Watershed))+
+    #     scale_fill_brewer()+
+    #     labs(y="mmH2O")+
+    #     theme_dark()+
+    #     theme(axis.title.x = element_blank())+
+    #     theme(legend.position="bottom")
+    # }) 
+    
     
     output$precip_compare <- renderPlot ({
       WS_precip %>%
