@@ -376,8 +376,8 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                       sidebarPanel(width = 3,
                                                    dateInput("startdate2", label = "Start Date", val= "2021-01-21"), #MU: Should we make the default start value the first data present in the data we read in?
                                                    dateInput("enddate2", label= "End Date", value=Sys.Date(), max=Sys.Date()),
-                                                   varSelectInput("variables", "Select Data to Compare:",
-                                                                  standard_full(), multiple = TRUE),
+                                                   # varSelectInput("variables", "Select Data to Compare:",
+                                                                  # standard_full(), multiple = TRUE),
                                                    # selectInput(inputId = "compare", label = "Select dataset to view:",
                                                    #             unique(standard_full()$Snow_Well), 
                                                    #             selected = unique(standard_full()$Snow_Well)[1]),
@@ -475,7 +475,6 @@ server <- function(input, output) {
     standard_full <- reactive ({
       full_join(ws3_standard(), ws9_standard(), by = "TIMESTAMP") %>%
       `colnames<-`(c("ws3_snow", "ws3_shallow_well", "ws3_deep_well", "TIMESTAMP", "ws9_snow", "ws9_shallow_well", "ws9_deep_well")) 
-   
        })
     
     #Combines data to display on WS 3 page
