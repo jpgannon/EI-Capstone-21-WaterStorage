@@ -376,8 +376,9 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                       sidebarPanel(width = 3,
                                                    dateInput("startdate2", label = "Start Date", val= "2021-01-21"), #MU: Should we make the default start value the first data present in the data we read in?
                                                    dateInput("enddate2", label= "End Date", value=Sys.Date(), max=Sys.Date()),
-                                                   # varSelectInput("variables", "Select Data to Compare:",
-                                                                  # standard_full(), multiple = TRUE),
+                                                   selectInput("variables", "Select Data to Plot:",
+                                                                  c("ws3_snow", "ws3_shallow_well", "ws3_deep_well", "ws9_snow", 
+                                                                    "ws9_shallow_well", "ws9_deep_well"), multiple = TRUE),
                                                    # selectInput(inputId = "compare", label = "Select dataset to view:",
                                                    #             unique(standard_full()$Snow_Well), 
                                                    #             selected = unique(standard_full()$Snow_Well)[1]),
@@ -474,7 +475,9 @@ server <- function(input, output) {
     
     standard_full <- reactive ({
       full_join(ws3_standard(), ws9_standard(), by = "TIMESTAMP") %>%
-      `colnames<-`(c("ws3_snow", "ws3_shallow_well", "ws3_deep_well", "TIMESTAMP", "ws9_snow", "ws9_shallow_well", "ws9_deep_well")) 
+      `colnames<-`(c("ws3_snow", "ws3_shallow_well", "ws3_deep_well", "TIMESTAMP", "ws9_snow", "ws9_shallow_well", "ws9_deep_well")) #%>% 
+        # pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
+        # filter(TIMESTAMP > ymd("2020-12-16"))
        })
     
     #Combines data to display on WS 3 page
@@ -586,17 +589,18 @@ server <- function(input, output) {
       
     })
     
-    # output$compare <- renderPlot ({
-    #   standard_full() %>%
-    #     filter(TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
-    #     ggplot(aes(x = TIMESTAMP, y = Precip, group = Watershed)) +
-    #     geom_line(aes(color=Watershed))+
-    #     scale_fill_brewer()+
-    #     labs(y="mmH2O")+
-    #     theme_dark()+
-    #     theme(axis.title.x = element_blank())+
-    #     theme(legend.position="bottom")
-    # }) 
+    #MU: Comparative plot
+    output$compare <- renderPlot ({
+      standard_full() %>%
+        filter(TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>%
+        ggplot(aes(x = TIMESTAMP, y = input$variable)) +
+        geom_line(aes(color=Water))+
+        scale_fill_brewer()+
+        labs(y="mmH2O")+
+        theme_dark()+
+        theme(axis.title.x = element_blank())+
+        theme(legend.position="bottom")
+    })
     
     
     output$precip_compare <- renderPlot ({
