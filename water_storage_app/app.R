@@ -378,10 +378,9 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                                                    dateInput("enddate2", label= "End Date", value=Sys.Date(), max=Sys.Date()),
                                                    selectInput("variables", "Select Data to Plot:",
                                                                   c("ws3_snow", "ws3_shallow_well", "ws3_deep_well", "ws9_snow", 
-                                                                    "ws9_shallow_well", "ws9_deep_well"), multiple = TRUE),
-                                                   # selectInput(inputId = "compare", label = "Select dataset to view:",
-                                                   #             unique(standard_full()$Snow_Well), 
-                                                   #             selected = unique(standard_full()$Snow_Well)[1]),
+                                                                    "ws9_shallow_well", "ws9_deep_well"), 
+                                                               selected = c("ws3_snow", "ws9_snow"),
+                                                               multiple = TRUE),
                                                    #filters for WS 3 
                                                    numericInput("porosSoil_WS3","WS3 Soil Porosity:",
                                                                 0.1, step = 0.1, min = 0, max = 1),
@@ -461,6 +460,7 @@ server <- function(input, output) {
     ws3_standard <- reactive ({
         full_join(standardized_Well_WS3(), standardized_SnowHr_WS3(), by = "TIMESTAMP") %>% 
             select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well) %>% 
+            `colnames<-`(c("TIMESTAMP", "ws3_snow", "ws3_shallow_well", "ws3_deep_well")) %>% 
             pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>%
             filter(TIMESTAMP > ymd("2020-12-16"))
     })
@@ -468,16 +468,19 @@ server <- function(input, output) {
     ws9_standard <- reactive ({
         full_join(standardized_Well_WS9(), standardized_SnowHr_WS9(), by = "TIMESTAMP") %>% 
             select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well) %>%
+            `colnames<-`(c("TIMESTAMP", "ws9_snow", "ws9_shallow_well", "ws9_deep_well")) %>% 
             pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
             filter(TIMESTAMP > ymd("2020-12-16"))
     
     })
     
     standard_full <- reactive ({
-      full_join(ws3_standard(), ws9_standard(), by = "TIMESTAMP") %>%
-      `colnames<-`(c("ws3_snow", "ws3_shallow_well", "ws3_deep_well", "TIMESTAMP", "ws9_snow", "ws9_shallow_well", "ws9_deep_well")) #%>% 
-        # pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
-        # filter(TIMESTAMP > ymd("2020-12-16"))
+      full_join(ws3_standard(), ws9_standard(), by = c("TIMESTAMP", "Water", "mm")) %>%
+        #select(TIMESTAMP, Water.x, mm.x) %>% 
+        `colnames<-`(c("TIMESTAMP", "Water", "mm"))
+      #`colnames<-`(c("TIMESTAMP", "ws3_snow", "ws3_shallow_well", "ws3_deep_well", "ws9_snow", "ws9_shallow_well", "ws9_deep_well")) #%>% 
+       # pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
+       # filter(TIMESTAMP > ymd("2020-12-16"))
        })
     
     #Combines data to display on WS 3 page
@@ -592,11 +595,11 @@ server <- function(input, output) {
     #MU: Comparative plot
     output$compare <- renderPlot ({
       standard_full() %>%
-        filter(TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>%
-        ggplot(aes(x = TIMESTAMP, y = input$variable)) +
+        filter(Water == input$variables & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>%
+        ggplot(aes(x = TIMESTAMP, y = mm, group = Water)) +
         geom_line(aes(color=Water))+
         scale_fill_brewer()+
-        labs(y="mmH2O")+
+        labs(y="Water (mmH2O)")+
         theme_dark()+
         theme(axis.title.x = element_blank())+
         theme(legend.position="bottom")
