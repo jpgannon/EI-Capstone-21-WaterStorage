@@ -522,7 +522,7 @@ server <- function(input, output) {
             ggplot(mapping = aes(x = TIMESTAMP, y = mm, fill=Water))+
             #geom_vline(xintercept = as.Date(input$VertDate), color = "red", size = 1.5)+
             geom_area() +
-        labs(x = "Time", y = "H20 (mm)")+
+        labs(x = "Time", y = "Storage (mm)")+
         scale_fill_brewer()+
         theme_dark()+ 
         theme(legend.position="bottom")+
@@ -535,7 +535,7 @@ server <- function(input, output) {
         filter(mm > 0 & TIMESTAMP >= input$startdate1 & TIMESTAMP <= input$enddate1) %>%
         ggplot(aes(x = TIMESTAMP, y = mm, fill=Water))+
         geom_area() +
-        labs(x = "Time", y = "H20 (mm)", labels=c("Deep Well", "Snow", "Shalllow Well"))+ 
+        labs(x = "Time", y = "Storage (mm)", labels=c("Deep Well", "Snow", "Shalllow Well"))+ 
         scale_fill_brewer()+
         theme_dark()+
         theme(legend.position="bottom")+
@@ -603,7 +603,7 @@ server <- function(input, output) {
         ggplot(aes(x = TIMESTAMP, y = mm, group = Water)) +
         geom_line(aes(color=Water))+
         scale_fill_brewer()+
-        labs(y="Water (mmH2O)")+
+        labs(y="Storage (mm)")+
         theme_dark()+
         theme(axis.title.x = element_blank())+
         theme(legend.position="bottom")
@@ -614,7 +614,7 @@ server <- function(input, output) {
       WS_precip %>%
       filter(TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
         ggplot(aes(x = TIMESTAMP, y = Precip, group = Watershed)) +
-        geom_line(aes(color=Watershed))+
+        geom_bar(stat = "identity", aes(color=Watershed))+
         scale_fill_brewer()+
         labs(y="Precipitation (mm)")+
         theme_dark()+
