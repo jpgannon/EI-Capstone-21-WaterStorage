@@ -17,10 +17,11 @@ library(DT) #MU: Helpful for displaying data tables.
 library(tidyverse) #MU: I added tidyverse because it has ggplot2 and other good functions 
 library(grid)
 library(shinythemes)
+library(googledrive)
 library(ggplot2)
 #reading in WS3 well data
 #setwd("/Volumes/GoogleDrive/My Drive/CLASSES/EI Capstone/EI_Capstone_S21")
-ws3_upper_wells <- read_csv("water_data_files/Water_table_WS3upper_WS_3Up_wells.dat",
+ws3_upper_wells <- read_csv("Water_table_WS3upper_WS_3Up_wells.dat",
                             skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="Batt_Volt", 
                                                     X4= "ptemp_Max" , X5= "WS3_N1_psi",X6="WS3_N1_rawdepth",
                                                     X7="WS3_N1_depth_corr",X8="WS3_N1_corr_depth",
@@ -43,7 +44,7 @@ ws3_upper_wells <-  ws3_upper_wells %>%
 
 
 
-ws9_upper_wells <- read_csv("water_data_files/Water_table_WS9_WS_9_wells.dat",
+ws9_upper_wells <- read_csv("Water_table_WS9_WS_9_wells.dat",
                             skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD",
                                                     X3 ="Batt_Volt", X4= "ptemp_Max" , 
                                                     X5= "HB156_psi", X6= "HB156_rawdepth", 
@@ -84,7 +85,7 @@ cleanDepth <- function(depth, cutoff1=-15, cutoff2=150, cutoff3=5){
 
 #reading in WS3 Snow 15 mins 
 
-ws3_upper_snowdat15mins <- read_csv("water_data_files/Water_table_WS3upper_WS_3Up_snowdat_15min.dat",
+ws3_upper_snowdat15mins <- read_csv("Water_table_WS3upper_WS_3Up_snowdat_15min.dat",
                                     skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", 
                                                             X3 ="Batt_Volt", X4= "ptemp" , 
                                                             X5= "H2O_Content_1", X6= "H2O_Content_2", 
@@ -104,7 +105,7 @@ ws3_upper_snowdat15mins <- ws3_upper_snowdat15mins %>%
 
 #reading in WS3 Snow hourly data 
 
-ws3_upper_snowdat_hr <- read_csv("water_data_files/Water_table_WS3upper_WS_3Up_snowdat_hr.dat",
+ws3_upper_snowdat_hr <- read_csv("Water_table_WS3upper_WS_3Up_snowdat_hr.dat",
                                  skip = 4, col_names = c(X1 = "TIMESTAMP" , 
                                                          X2 = "RECORD", X3 ="H2O_Content_1_Avg", 
                                                          X4= "H2O_Content_2_Avg", X5= "Avg_Period_1_Avg", 
@@ -144,7 +145,7 @@ ws3_upper_snowdat_hr[,grep("RTD", colnames(ws3_upper_snowdat_hr))] <- lapply(ws3
 #reading in WS9 Snow 15 mins 
 # AW - currently the VWC is either 0 or NA for all entries 
 
-ws9_upper_snowdat15mins <- read_csv("water_data_files/Water_table_WS9_WS_9_snowdat_15min.dat",
+ws9_upper_snowdat15mins <- read_csv("Water_table_WS9_WS_9_snowdat_15min.dat",
                                     skip = 4, col_names = c(X1 = "TIMESTAMP" ,
                                                             X2 = "RECORD", X3 ="Batt_Volt", 
                                                             X4= "ptemp" , X5= "H2O_Content_1", 
@@ -166,7 +167,7 @@ ws9_upper_snowdat15mins <- ws9_upper_snowdat15mins %>%
 
 #reading in WS9 Snow hourly data 
 
-ws9_upper_snowdat_hr <- read_csv("water_data_files/Water_table_WS9_WS_9_snowdat_hr.dat",
+ws9_upper_snowdat_hr <- read_csv("Water_table_WS9_WS_9_snowdat_hr.dat",
                                  skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", 
                                                          X3 ="H2O_Content_1_Avg", X4= "H2O_Content_2_Avg", 
                                                          X5= "Avg_Period_1_Avg", X6= "Avg_Period_2_Avg", 
@@ -206,7 +207,7 @@ ws9_upper_snowdat_hr[,grep("RTD", colnames(ws9_upper_snowdat_hr))] <- lapply(ws9
 
 #AW - Read in precip & discharge data 
 
-WS3_weir <- read_csv("water_data_files/weir3_Ws_3b.dat", 
+WS3_weir <- read_csv("weir3_Ws_3b.dat", 
                      skip = 4,
                      col_names = c(X1 = "TIMESTAMP", X2 = "Record", X3 = "Batt",
                                    X4 = "Ptemp", X5 = "OptMed", X6 = "OptMax",
@@ -220,7 +221,7 @@ WS3_weir <- read_csv("water_data_files/weir3_Ws_3b.dat",
   select(-c(month, day, year, hour), TIMESTAMP, Discharge)
 
 
-WS9_weir <- read_csv("water_data_files/weir9_Ws_9b.dat", 
+WS9_weir <- read_csv("weir9_Ws_9b.dat", 
                      skip = 4,
                      col_names = c(X1 = "TIMESTAMP", X2 = "Record", X3 = "Batt",
                                    X4 = "Ptemp", X5 = "OptMed", X6 = "OptMax",
@@ -234,7 +235,7 @@ WS9_weir <- read_csv("water_data_files/weir9_Ws_9b.dat",
   select(-c(month, day, year, hour), TIMESTAMP, Discharge) %>% 
   filter(TIMESTAMP > "2021-01-21")
 
-WS9_Precip <- read_csv("water_data_files/rrg19_Rg_19-2019-08-09.dat", 
+WS9_Precip <- read_csv("rrg19_Rg_19-2019-08-09.dat", 
                        skip = 4, 
                        col_names = c(X1 = "TIMESTAMP", X2 = "Record", X3 = "GageMinV",
                                      X4 = "ActTemp", X5 = "ActDepth", X6 = "ReportPCP",
@@ -249,7 +250,7 @@ WS9_Precip <- read_csv("water_data_files/rrg19_Rg_19-2019-08-09.dat",
   mutate(ReportPCP = ReportPCP * 10)
 
 
-WS3_Precip <- read_csv("water_data_files/wxsta1_Wx_1_rain.dat", 
+WS3_Precip <- read_csv("wxsta1_Wx_1_rain.dat", 
                        skip = 4, 
                        col_names = c(X1 = "TIMESTAMP", X2 = "Record", X3 = "GageMinV",
                                      X4 = "ActTemp", X5 = "ActDepth", X6 = "ReportPCP",
@@ -289,6 +290,7 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
                            
                            #define tabs to be used in the app
                            tabPanel('About',
+                                    actionButton("dataDL", "Download most recent data"),
                                     fluidRow(
                                         tags$h4("This app visualizes data from Watershed 3 and 9 of the Hubbard
                                     Brook Experimental Forest through graphs, a map showing where the data was collected,
@@ -645,6 +647,21 @@ server <- function(input, output) {
         addMarkers(lng= -71.7185, lat = 43.9403, popup = "Hubbard Brook Experimental Forest")
     
     output$map <- renderLeaflet(m)
+    
+    observeEvent(input$dataDL, {
+      drive_deauth()
+      drive_download(as_id("1yhfJ7zJdumI0cMxQ7i7Zzmebo5pdEV_E"), overwrite = TRUE)
+      drive_download(as_id("1wsvu3CXHj81n81eS4wbLE1dj3kpSrOqH"), overwrite = TRUE)
+      drive_download(as_id("175Ai1DzFq13ut2J1JD43HExgh7n15HVS"), overwrite = TRUE)
+      drive_download(as_id("1eq62MIa6n0tpeLTG-4R64q8iuhOHDDAi"), overwrite = TRUE)
+      drive_download(as_id("1g3iBLteoLn_ipqhbY25UahJd--bWlwHf"), overwrite = TRUE)
+      drive_download(as_id("1Ckb2L41xRAopHM3y4nnv8JmFEY6JN599"), overwrite = TRUE)
+      drive_download(as_id("12CQ5lF-dU9B950eaEOYWp27slikcyNS0"), overwrite = TRUE)
+      drive_download(as_id("12CVHTfrD9Qef9GB_CTn0qX-EExo-HgNw"), overwrite = TRUE)
+      drive_download(as_id("12C1vsIsA7Fs6pN-EbpF20Z0Lm5YsOsiN"), overwrite = TRUE)
+      drive_download(as_id("12DGM7SBNwnXPL9K8I8dYo8huvVjBfifQ"), overwrite = TRUE)
+      
+    })
     
     #---------------------------------------------
 } # END Server function
