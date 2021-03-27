@@ -283,32 +283,36 @@ WS_precip_dis <- full_join(WS_precip, WS_discharge, by = c("TIMESTAMP", "Watersh
 
 
 # Define UI for application
-ui <- fluidPage(navbarPage("Hubbard Brook - Water Storage Data App",
+ui <- fluidPage(navbarPage("Hubbard Brook - Watershed Storage Data App",
                            theme = shinytheme('cosmo'),
                            
                            
                            
                            #define tabs to be used in the app
                            tabPanel('About',
-                                    actionButton("dataDL", "Download most recent data"),
+                                    actionButton("dataDL", "Click here to download most recent data"),
                                     fluidRow(
-                                        tags$h4("This app visualizes data from Watershed 3 and 9 of the Hubbard
-                                    Brook Experimental Forest through graphs, a map showing where the data was collected,
-                   and a table. The data can also be filtered using the various filters found in each tab.
-                                                About: Information about the function of the app as well as a map and graphics of the watersheds. 
-Watershed 3: Three plots showing total mm H20, discharge, and precipitation. One table displaying the data. All the plots and tables are reactive with the ability to change the date, soil porosity, and volumetric water content (VWC). 
-Watershed 9: Three plots showing total mm H20, discharge, and precipitation. One table displaying the data. All the plots and tables are reactive with the ability to change the date, soil porosity, and volumetric water content (VWC). (Same format as the Watershed 3 tab)
-Comparative Watershed Data: The first plot allows the user to compare any of the wells and snow measurements from either watershed. The second plot shows the discharge for both watersheds. The third plot shows the precipitation for both watersheds. 
-
-Reactive Inputs: 
-Porosity - Utilized to change the percent of space in between soil particles. This affects how much water is in the soil due to water getting in the pores. 
-Maximum Volumetric Water Content (VWC) - Utilized to change the maximum saturation of water in snow. VWC is necessary in order to normalize the amount of water in snow. 
-
-Units: All values are in mm of water. 
-")),
+                                      tags$h4("This app visualizes watershed storage data from Watershed 3 and 9 of the Hubbard
+                                    Brook Experimental Forest through reactive visualizations, a map showing where the data was collected,
+                   and interactive tables. The data can be manipulated using various reactive and interactive elements found in each tab."),
+                                      tags$h4(strong('Information about the functionality and parts of this app are below:')),  
+                                      strong('Watershed 3'), 
+                                      tags$li('Three plots showing total mm H20, discharge, and precipitation. One table displaying the data. All the plots and tables are reactive with the ability to change the date, soil porosity, and volumetric water content (VWC).'),
+                                      strong('Watershed 9'),
+                                      tags$li('Three plots showing total mm H20, discharge, and precipitation. One table displaying the data. All the plots and tables are reactive with the ability to change the date, soil porosity, and volumetric water content (VWC). (Same format as the Watershed 3 tab)'),
+                                      strong('Comparative Watershed Data'),
+                                      tags$li('The first plot allows the user to compare any of the wells and snow measurements from either watershed.'),
+                                      tags$li('The second plot shows the discharge for both watersheds.'),
+                                      tags$li('The third plot shows the precipitation for both watersheds.'),
+                                      
+                                      strong('Reactive Inputs/User Inputs'),
+                                      tags$li('Porosity - Utilized to change the percent of space in between soil particles. This affects how much water is in the soil due to water getting in the pores.'),
+                                      tags$li('Maximum Volumetric Water Content (VWC) - Utilized to change the maximum saturation of water in snow. VWC is necessary in order to normalize the amount of water in snow.'),
+                                      
+                                      strong('Units: All values are in mm of water.')),
                                     fluidRow(
-                                        tags$p("Map Credit: Hubbard Brook Experimental Forest"),
-                                        tags$ul("This application will attempt to:"),
+                                        
+                                        em("In summary this application will attempt to:"),
                                                 tags$li("Visualize Realtime and Past Watershed Storage Data Using Joined and Normalized Datasets."),
                                                 tags$li("Create a user-friendly dashboard that allows for data exploration."),
                                                 tags$li("Assist Hubbard Brook Scientists in testing hypothetical data and results.")), 
