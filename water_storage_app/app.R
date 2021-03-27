@@ -336,15 +336,28 @@ Units: All values are in mm of water.
                                                      fluid = TRUE),
                                         mainPanel(
                                           fluidRow(
-                                            plotOutput("plot1")),
+                                            plotOutput("plot1",
+                                             dblclick = "plot_dblclick",
+                                             brush = brushOpts(
+                                               id = "plot_brush",
+                                               resetOnNew = TRUE))
+                                            ),
                                           fluidRow(
-                                            plotOutput("discharge1")),
+                                            plotOutput("discharge1",
+                                                       dblclick = "plot_dblclick",
+                                                       brush = brushOpts(
+                                                         id = "plot_brush",
+                                                         resetOnNew = TRUE))),
                                           fluidRow(
-                                            plotOutput("precip1")),
+                                            plotOutput("precip1",
+                                                       dblclick = "plot_dblclick",
+                                                       brush = brushOpts(
+                                                         id = "plot_brush",
+                                                         resetOnNew = TRUE))),
                                           fluidRow(
                                             DTOutput("table1"))
                                         )
-                                    ) 
+                                    )
                            ),
                            
                            tabPanel('Watershed 9',
@@ -367,11 +380,24 @@ Units: All values are in mm of water.
                                                  fluid = TRUE),
                                       mainPanel(
                                         fluidRow(
-                                          plotOutput("plot2")),
+                                          plotOutput("plot2",
+                                                     dblclick = "plot_dblclick",
+                                                     brush = brushOpts(
+                                                       id = "plot_brush",
+                                                       resetOnNew = TRUE))
+                                          ),
                                         fluidRow(
-                                          plotOutput("discharge2")),
+                                          plotOutput("discharge2",
+                                                     dblclick = "plot_dblclick",
+                                                     brush = brushOpts(
+                                                       id = "plot_brush",
+                                                       resetOnNew = TRUE))),
                                         fluidRow(
-                                          plotOutput("precip2")),
+                                          plotOutput("precip2",
+                                                     dblclick = "plot_dblclick",
+                                                     brush = brushOpts(
+                                                       id = "plot_brush",
+                                                       resetOnNew = TRUE))),
                                         fluidRow(
                                           DTOutput("table2"))
                                       )
@@ -411,11 +437,23 @@ Units: All values are in mm of water.
                                       mainPanel(
                                       #line plots for comparing the two watersheds 
                                         fluidRow(
-                                          plotOutput("compare")),
+                                          plotOutput("compare",
+                                                     dblclick = "plot_dblclick",
+                                                     brush = brushOpts(
+                                                       id = "plot_brush",
+                                                       resetOnNew = TRUE))),
                                         fluidRow(
-                                          plotOutput("dis_compare")),
+                                          plotOutput("dis_compare",
+                                                     dblclick = "plot_dblclick",
+                                                     brush = brushOpts(
+                                                       id = "plot_brush",
+                                                       resetOnNew = TRUE))),
                                         fluidRow(
-                                          plotOutput("precip_compare"))
+                                          plotOutput("precip_compare",
+                                                     dblclick = "plot_dblclick",
+                                                     brush = brushOpts(
+                                                       id = "plot_brush",
+                                                       resetOnNew = TRUE)))
                                       )
                                     ))
 ))                          
@@ -638,6 +676,24 @@ server <- function(input, output) {
       #MU: This is where discharge plot for WS9 goes.
     })
     
+    # Brushing -----------------------------------
+    
+    # On double-click event it checks for a brush
+    # Yes, display data and zoom
+    observeEvent(input$plot1_dblclick, {
+      brush <- input$plot1_brush
+      
+      
+      if (!is.null(brush)) {
+        ranges$x <- c(brush$xmin, brush$xmax)
+      } 
+      
+      
+      else {
+        ranges$x <- c(input$startdate, input$enddate)
+      }
+    }
+    )
     
     # Plot map of station locations using leaflet
     #---------------------------------------------
