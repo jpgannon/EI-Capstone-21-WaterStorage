@@ -647,7 +647,7 @@ server <- function(input, output) {
     
     #MU: Comparative plot
     output$compare <- renderPlot ({
-      standard_full() %>%
+      compare_full() %>%
         filter(Water == input$variables & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>%
         ggplot(aes(x = TIMESTAMP, y = mm, group = Water)) +
         geom_line(aes(color=Water))+
@@ -727,8 +727,69 @@ server <- function(input, output) {
       drive_download(as_id("12DGM7SBNwnXPL9K8I8dYo8huvVjBfifQ"), overwrite = TRUE)
       
     })
+#------------------------------------------------------------------------------------------
+    compare_Well_WS3 <-  reactive({
+      ws3_upper_wells %>% 
+        mutate(standardized_well_1 = ((WS3_N1_corr_depth * 10) * input$porosSoil_WS3)) %>% 
+        mutate(standardized_well_2 = ((WS3_N2_corr_depth * 10) * input$porosSoil_WS3)) %>% 
+        mutate(standardized_deep_well = ((WS3_42_4_d2_corr_depth * 10) * input$porosPM_WS3)) %>%
+        select(TIMESTAMP, standardized_well_2, standardized_deep_well)
+    })
+
+    compare_Well_WS9 <-  reactive({
+      ws9_upper_wells %>% 
+        mutate(standardized_well_1 = ((HB156_corr_depth * 10) * input$porosSoil_WS9)) %>% 
+        mutate(standardized_well_2 = ((HB179s_corr_depth * 10) * input$porosSoil_WS9)) %>% 
+        mutate(standardized_deep_well = ((HB176d_corr_depth * 10) * input$porosPM_WS9)) %>%
+        select(TIMESTAMP, standardized_well_2, standardized_deep_well)
+    })
     
-    #---------------------------------------------
+    compare_SnowHr_WS3 <-  reactive({
+      ws3_upper_snowdat_hr %>% 
+        mutate(VWC_average = ((VWC_average - min_WS3snow) / (input$maxVWC_WS3 - min_WS3snow ))) %>% 
+        mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10))) %>% 
+        select(TIMESTAMP, standardized_snow)
+    })
+    
+    compare_SnowHr_WS9 <- reactive({
+      ws9_upper_snowdat_hr %>%
+        mutate(VWC_average = ((VWC_average - min_WS9snow) / (input$maxVWC_WS9 - min_WS9snow ))) %>% 
+        mutate(standardized_snow = (VWC_average * (Depthscaled_Avg * 10))) %>% 
+        select(TIMESTAMP, standardized_snow)
+      
+    })
+
+    ws3_compare <- reactive ({
+      full_join(compare_Well_WS3(), compare_SnowHr_WS3(), by = "TIMESTAMP") %>% 
+        select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well) %>% 
+        `colnames<-`(c("TIMESTAMP", "ws3_snow", "ws3_shallow_well", "ws3_deep_well")) %>% 
+        pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>%
+        filter(TIMESTAMP >= ranges$x[1] & TIMESTAMP <= ranges$x[2])
+    }) 
+    
+    ws9_compare <- reactive ({
+      full_join(compare_Well_WS9(), compare_SnowHr_WS9(), by = "TIMESTAMP") %>% 
+        select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well) %>%
+        `colnames<-`(c("TIMESTAMP", "ws9_snow", "ws9_shallow_well", "ws9_deep_well")) %>% 
+        pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
+        filter(TIMESTAMP >= ranges$x[1] & TIMESTAMP <= ranges$x[2])
+      
+    })
+    
+    compare_full <- reactive ({
+      full_join(ws3_compare(), ws9_compare(), by = c("TIMESTAMP", "Water", "mm")) %>%
+        #select(TIMESTAMP, Water.x, mm.x) %>% 
+        `colnames<-`(c("TIMESTAMP", "Water", "mm")) %>% 
+        filter(TIMESTAMP >= ranges$x[1] & TIMESTAMP <= ranges$x[2])
+      #`colnames<-`(c("TIMESTAMP", "ws3_snow", "ws3_shallow_well", "ws3_deep_well", "ws9_snow", "ws9_shallow_well", "ws9_deep_well")) #%>% 
+      # pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
+      # filter(TIMESTAMP > ymd("2020-12-16"))
+    })
+    
+
+#------------------------------------------------------------------------------------------    
+    
+#------------------------------------------------------------------------------------------   
 } # END Server function
 
 # Run the application 
