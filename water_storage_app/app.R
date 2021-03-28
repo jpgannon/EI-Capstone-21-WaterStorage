@@ -728,6 +728,7 @@ server <- function(input, output) {
       
     })
 #------------------------------------------------------------------------------------------
+#--------IDENTICAL CODE TO SOME OF ABOVE CODE USED FOR NEW COMPARATIVE PLOT FILTERS
     compare_Well_WS3 <-  reactive({
       ws3_upper_wells %>% 
         mutate(standardized_well_1 = ((WS3_N1_corr_depth * 10) * input$porosSoil_WS3)) %>% 
@@ -786,7 +787,7 @@ server <- function(input, output) {
       # filter(TIMESTAMP > ymd("2020-12-16"))
     })
     
-
+#-------END OF SECTION WITH IDENTICAL CODE -----------------------------------------------
 #------------------------------------------------------------------------------------------    
     
 #------------------------------------------------------------------------------------------   
