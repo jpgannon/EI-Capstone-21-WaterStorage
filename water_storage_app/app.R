@@ -469,6 +469,9 @@ server <- function(input, output) {
     # read in cleaned watershed data
     # ---------------
     
+    #MU: Date range to filter brushing
+  ranges <- reactiveValues(x = c("2007-08-10", "2018-10-08"))
+    
     #MU: standardized well ws3 data to mm H2O
     standardized_Well_WS3 <-  reactive({
         ws3_upper_wells %>% 
@@ -579,7 +582,7 @@ server <- function(input, output) {
         filter(mm > 0 & TIMESTAMP >= input$startdate1 & TIMESTAMP <= input$enddate1) %>%
         ggplot(aes(x = TIMESTAMP, y = mm, fill=Water))+
         geom_area() +
-        labs(x = "Time", y = "Storage (mm)", labels=c("Deep Well", "Snow", "Shalllow Well"))+ 
+        labs(x = "Time", y = "Storage (mm)", labels=c("Deep Well", "Snow", "Shalllow Well"))+
         scale_fill_brewer()+
         theme_dark()+
         theme(legend.position="bottom")+
@@ -677,15 +680,15 @@ server <- function(input, output) {
         theme(axis.title.x = element_blank())+
         theme(legend.position="bottom")
       
-      #MU: This is where discharge plot for WS9 goes.
+    
     })
     
     # Brushing -----------------------------------
     
     # On double-click event it checks for a brush
     # Yes, display data and zoom
-    observeEvent(input$plot1_dblclick, {
-      brush <- input$plot1_brush
+    observeEvent(input$plot_dblclick, {
+      brush <- input$plot_brush
       
       
       if (!is.null(brush)) {
@@ -694,7 +697,7 @@ server <- function(input, output) {
       
       
       else {
-        ranges$x <- c(input$startdate, input$enddate)
+        ranges$x <- c(ymd(input$startdate), ymd(input$enddate))
       }
     }
     )
