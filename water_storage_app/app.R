@@ -462,15 +462,16 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Watershed Storage Data App",
                                     ))
 ))                          
 
-
 # Define server
 server <- function(input, output) {
     #----------------
     # read in cleaned watershed data
     # ---------------
     
-    #MU: Date range to filter brushing
-  ranges <- reactiveValues(x = c("2007-08-10", "2018-10-08"))
+  #MU: Date range to filter brushing
+  ranges <- reactiveValues(x = ymd(c(start = "2021-01-21",
+                                    end = "2021-03-28")))
+  
     
     #MU: standardized well ws3 data to mm H2O
     standardized_Well_WS3 <-  reactive({
@@ -513,7 +514,7 @@ server <- function(input, output) {
             select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well) %>% 
             `colnames<-`(c("TIMESTAMP", "ws3_snow", "ws3_shallow_well", "ws3_deep_well")) %>% 
             pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>%
-            filter(TIMESTAMP > ymd("2020-12-16"))
+            filter(TIMESTAMP >= ranges$x[1] & TIMESTAMP <= ranges$x[2])
     })
     
     ws9_standard <- reactive ({
@@ -521,14 +522,15 @@ server <- function(input, output) {
             select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well) %>%
             `colnames<-`(c("TIMESTAMP", "ws9_snow", "ws9_shallow_well", "ws9_deep_well")) %>% 
             pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
-            filter(TIMESTAMP > ymd("2020-12-16"))
+            filter(TIMESTAMP >= ranges$x[1] & TIMESTAMP <= ranges$x[2])
     
     })
     
     standard_full <- reactive ({
       full_join(ws3_standard(), ws9_standard(), by = c("TIMESTAMP", "Water", "mm")) %>%
         #select(TIMESTAMP, Water.x, mm.x) %>% 
-        `colnames<-`(c("TIMESTAMP", "Water", "mm"))
+        `colnames<-`(c("TIMESTAMP", "Water", "mm")) %>% 
+        filter(TIMESTAMP >= ranges$x[1] & TIMESTAMP <= ranges$x[2])
       #`colnames<-`(c("TIMESTAMP", "ws3_snow", "ws3_shallow_well", "ws3_deep_well", "ws9_snow", "ws9_shallow_well", "ws9_deep_well")) #%>% 
        # pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
        # filter(TIMESTAMP > ymd("2020-12-16"))
@@ -697,7 +699,7 @@ server <- function(input, output) {
       
       
       else {
-        ranges$x <- c(ymd(input$startdate), ymd(input$enddate))
+        ranges$x <- c(input$startdate, input$enddate)
       }
     }
     )
