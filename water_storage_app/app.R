@@ -353,11 +353,7 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Watershed Storage Data App",
                                                          id = "plot_brush",
                                                          resetOnNew = TRUE))),
                                           fluidRow(
-                                            plotOutput("precip1",
-                                                       dblclick = "plot_dblclick",
-                                                       brush = brushOpts(
-                                                         id = "plot_brush",
-                                                         resetOnNew = TRUE))),
+                                            plotOutput("precip1")),
                                           fluidRow(
                                             DTOutput("table1"))
                                         )
@@ -397,11 +393,7 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Watershed Storage Data App",
                                                        id = "plot_brush",
                                                        resetOnNew = TRUE))),
                                         fluidRow(
-                                          plotOutput("precip2",
-                                                     dblclick = "plot_dblclick",
-                                                     brush = brushOpts(
-                                                       id = "plot_brush",
-                                                       resetOnNew = TRUE))),
+                                          plotOutput("precip2")),
                                         fluidRow(
                                           DTOutput("table2"))
                                       )
@@ -453,11 +445,7 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Watershed Storage Data App",
                                                        id = "plot_brush",
                                                        resetOnNew = TRUE))),
                                         fluidRow(
-                                          plotOutput("precip_compare",
-                                                     dblclick = "plot_dblclick",
-                                                     brush = brushOpts(
-                                                       id = "plot_brush",
-                                                       resetOnNew = TRUE)))
+                                          plotOutput("precip_compare"))
                                       )
                                     ))
 ))                          
@@ -470,7 +458,13 @@ server <- function(input, output) {
     
   #MU: Date range to filter brushing
   ranges <- reactiveValues(x = ymd(c(start = "2021-01-21",
-                                    end = "2021-03-28")))
+                                    end = "2021-04-08")))
+  #MU: Date range to filter brushing
+  ranges2 <- reactiveValues(x = ymd(c(start = "2021-01-21",
+                                     end = "2021-04-08")))
+  #MU: Date range to filter brushing
+  ranges3 <- reactiveValues(x = ymd(c(start = "2021-01-21",
+                                     end = "2021-04-08")))
   
     
     #MU: standardized well ws3 data to mm H2O
@@ -522,7 +516,7 @@ server <- function(input, output) {
             select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well) %>%
             `colnames<-`(c("TIMESTAMP", "ws9_snow", "ws9_shallow_well", "ws9_deep_well")) %>% 
             pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
-            filter(TIMESTAMP >= ranges$x[1] & TIMESTAMP <= ranges$x[2])
+            filter(TIMESTAMP >= ranges2$x[1] & TIMESTAMP <= ranges2$x[2])
     
     })
     
@@ -530,7 +524,7 @@ server <- function(input, output) {
       full_join(ws3_standard(), ws9_standard(), by = c("TIMESTAMP", "Water", "mm")) %>%
         #select(TIMESTAMP, Water.x, mm.x) %>% 
         `colnames<-`(c("TIMESTAMP", "Water", "mm")) %>% 
-        filter(TIMESTAMP >= ranges$x[1] & TIMESTAMP <= ranges$x[2])
+        filter(TIMESTAMP >= ranges3$x[1] & TIMESTAMP <= ranges3$x[2])
       #`colnames<-`(c("TIMESTAMP", "ws3_snow", "ws3_shallow_well", "ws3_deep_well", "ws9_snow", "ws9_shallow_well", "ws9_deep_well")) #%>% 
        # pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
        # filter(TIMESTAMP > ymd("2020-12-16"))
@@ -567,10 +561,11 @@ server <- function(input, output) {
     output$plot1 <- renderPlot({
         ws3_standard() %>%
         #select(TIMESTAMP, standardized_well_2, standardized_deep_well, Depthcleaned) %>% 
-            filter(mm > 0 & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
+            filter(mm > 0 & TIMESTAMP >= ranges$x[1] & TIMESTAMP <= ranges$x[2]) %>% 
             ggplot(mapping = aes(x = TIMESTAMP, y = mm, fill=Water))+
             #geom_vline(xintercept = as.Date(input$VertDate), color = "red", size = 1.5)+
             geom_area() +
+        
         labs(x = "Time", y = "Storage (mm)")+
         scale_fill_brewer()+
         theme_dark()+ 
@@ -581,7 +576,7 @@ server <- function(input, output) {
     })
     output$plot2 <- renderPlot({
       ws9_standard() %>%
-        filter(mm > 0 & TIMESTAMP >= input$startdate1 & TIMESTAMP <= input$enddate1) %>%
+        filter(mm > 0 & TIMESTAMP >= ranges2$x[1] & TIMESTAMP <= ranges2$x[2]) %>%
         ggplot(aes(x = TIMESTAMP, y = mm, fill=Water))+
         geom_area() +
         labs(x = "Time", y = "Storage (mm)", labels=c("Deep Well", "Snow", "Shalllow Well"))+
@@ -595,7 +590,7 @@ server <- function(input, output) {
     
     output$discharge1 <- renderPlot({
       WS_discharge %>% 
-        filter(Watershed == "WS3_Discharge" & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
+        filter(Watershed == "WS3_Discharge" & TIMESTAMP >= ranges$x[1] & TIMESTAMP <= ranges$x[2]) %>% 
         ggplot(aes(x = TIMESTAMP, y = Discharge)) +
         geom_line()+
         labs(y="Discharge (mm)")+
@@ -608,7 +603,7 @@ server <- function(input, output) {
     
     output$discharge2 <- renderPlot({
       WS_discharge %>% 
-        filter(Watershed == "W9_Discharge" & TIMESTAMP >= input$startdate1 & TIMESTAMP <= input$enddate1) %>% 
+        filter(Watershed == "W9_Discharge" & TIMESTAMP >= ranges2$x[1] & TIMESTAMP <= ranges2$x[2]) %>% 
         ggplot(aes(x = TIMESTAMP, y = Discharge)) +
         geom_line()+
         labs(y="Discharge (mm)")+
@@ -622,7 +617,7 @@ server <- function(input, output) {
     output$precip1 <- renderPlot({
       #MU: This is where precip plot for WS3 goes.
       WS_precip %>% 
-        filter(Watershed == "W3_Precip" & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
+        filter(Watershed == "W3_Precip" & TIMESTAMP >= ranges$x[1] & TIMESTAMP <= ranges$x[2]) %>% 
         ggplot(aes(x = TIMESTAMP, y = Precip)) +
         geom_bar(stat = "identity", fill="skyblue3")+
         labs(y="Precipitation (mm)")+
@@ -635,7 +630,7 @@ server <- function(input, output) {
     output$precip2 <- renderPlot({
       #MU: This is where precip plot for WS9 goes.
       WS_precip %>% 
-        filter(Watershed == "W9_Precip" & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
+        filter(Watershed == "W9_Precip" & TIMESTAMP >= ranges2$x[1] & TIMESTAMP <= ranges2$x[2]) %>% 
         ggplot(aes(x = TIMESTAMP, y = Precip)) +
         geom_bar(stat = "identity", fill="skyblue3")+
         scale_fill_brewer()+
@@ -648,7 +643,7 @@ server <- function(input, output) {
     #MU: Comparative plot
     output$compare <- renderPlot ({
       compare_full() %>%
-        filter(Water == input$variables & TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>%
+        filter(Water == input$variables & TIMESTAMP >= ranges3$x[1] & TIMESTAMP <= ranges3$x[2]) %>%
         ggplot(aes(x = TIMESTAMP, y = mm, group = Water)) +
         geom_line(aes(color=Water))+
         scale_fill_brewer()+
@@ -661,7 +656,7 @@ server <- function(input, output) {
     
     output$precip_compare <- renderPlot ({
       WS_precip %>%
-      filter(TIMESTAMP >= input$startdate & TIMESTAMP <= input$enddate) %>% 
+      filter(TIMESTAMP >= ranges3$x[1] & TIMESTAMP <= ranges3$x[2]) %>% 
         ggplot(aes(x = TIMESTAMP, y = Precip, group = Watershed)) +
         geom_bar(stat = "identity", aes(color=Watershed))+
         scale_fill_brewer()+
@@ -673,7 +668,7 @@ server <- function(input, output) {
     
     output$dis_compare <- renderPlot({
       WS_discharge %>% 
-        filter(TIMESTAMP >= input$startdate1 & TIMESTAMP <= input$enddate1) %>% 
+        filter(TIMESTAMP >= ranges3$x[1] & TIMESTAMP <= ranges3$x[2]) %>% 
         ggplot(aes(x = TIMESTAMP, y = Discharge, group = Watershed)) +
         geom_line(aes(color=Watershed))+
         labs(y="Discharge (mm)")+
@@ -695,11 +690,15 @@ server <- function(input, output) {
       
       if (!is.null(brush)) {
         ranges$x <- c(brush$xmin, brush$xmax)
+        ranges2$x <- c(brush$xmin, brush$xmax)
+        ranges3$x <- c(brush$xmin, brush$xmax)
       } 
       
       
       else {
         ranges$x <- c(input$startdate, input$enddate)
+        ranges2$x <- c(input$startdate1, input$enddate1)
+        ranges3$x <- c(input$startdate2, input$enddate2)
       }
     }
     )
