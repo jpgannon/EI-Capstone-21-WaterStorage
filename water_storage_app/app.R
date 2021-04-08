@@ -240,7 +240,7 @@ WS9_Precip <- read_csv("rrg19_Rg_19-2019-08-09.dat",
                        col_names = c(X1 = "TIMESTAMP", X2 = "Record", X3 = "GageMinV",
                                      X4 = "ActTemp", X5 = "ActDepth", X6 = "ReportPCP",
                                      X7 = "ODPCounts", X8 = "blockedSec", X9 = "Scan10",
-                                     X10 = "ActDepthRA")) %>% 
+                                     X10 = "ActDepthRA")) %>%
   select(TIMESTAMP, ReportPCP) %>% 
   group_by(year = year(TIMESTAMP), month = month(TIMESTAMP), day = day(TIMESTAMP), hour = hour(TIMESTAMP)) %>% 
   summarise(ReportPCP = mean(ReportPCP)) %>%
