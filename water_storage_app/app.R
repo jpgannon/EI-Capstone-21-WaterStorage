@@ -247,7 +247,8 @@ WS9_Precip <- read_csv("rrg19_Rg_19-2019-08-09.dat",
   ungroup() %>%
   mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
   select(-c(month, day, year, hour), TIMESTAMP, ReportPCP) %>% 
-  mutate(ReportPCP = ReportPCP * 10)
+  mutate(ReportPCP = ReportPCP * 10) %>% 
+  na_if(0)
 
 
 WS3_Precip <- read_csv("wxsta1_Wx_1_rain.dat", 
@@ -263,7 +264,8 @@ WS3_Precip <- read_csv("wxsta1_Wx_1_rain.dat",
   mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
   select(-c(month, day, year, hour), TIMESTAMP, ReportPCP) %>% 
   mutate(ReportPCP = ReportPCP * 10) %>% 
-  filter(TIMESTAMP > "2021-01-21")
+  filter(TIMESTAMP > "2021-01-21") %>% 
+  na_if(0)
 
 
 #AW - full join and pivot longer for the WS 3 & 9 precipitation data 
@@ -327,11 +329,11 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Watershed Storage Data App",
                                                      #             choices = unique(ws3_standard$name), 
                                                      #             selected = unique(ws3_standard$name)[1]),
                                                      numericInput("porosSoil","Soil Porosity:",
-                                                                  0.1, step = 0.1, min = 0, max = 1),
+                                                                  0.5, step = 0.1, min = 0, max = 1),
                                                      numericInput("porosPM","Parent Material Porosity:",
-                                                                  0.1, step = 0.1, min = 0, max = 1),
+                                                                  0.4, step = 0.1, min = 0, max = 1),
                                                      numericInput("maxVWC","Maximum VWC:",
-                                                                  0.1, step = 0.1, min = 0, max = 1),
+                                                                  0.01, step = 0.1, min = 0.001, max = 1),
                                                      #dateInput("VertDate", label = "Date to view:", val= "2021-01-21"),
                                                      verbatimTextOutput("valueSoil"),
                                                      verbatimTextOutput("valuePM"),
@@ -369,11 +371,11 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Watershed Storage Data App",
                                                  #             choices = unique(ws3_standard$name),
                                                  #             selected = unique(ws3_standard$name)[1]),
                                                  numericInput("porosSoil1","Soil Porosity:",
-                                                              0.1, step = 0.1, min = 0, max = 1),
+                                                              0.5, step = 0.1, min = 0, max = 1),
                                                  numericInput("porosPM1","Parent Material Porosity:",
-                                                              0.1, step = 0.1, min = 0, max = 1),
+                                                              0.4, step = 0.1, min = 0, max = 1),
                                                  numericInput("maxVWC1","Maximum VWC:",
-                                                              0.1, step = 0.1, min = 0, max = 1),
+                                                              0.01, step = 0.1, min = 0.001, max = 1),
                                                  verbatimTextOutput("valueSoil1"),
                                                  verbatimTextOutput("valuePM1"),
                                                  verbatimTextOutput("maxVWC1"),
@@ -412,17 +414,17 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Watershed Storage Data App",
                                                                multiple = TRUE),
                                                    #filters for WS 3 
                                                    numericInput("porosSoil_WS3","WS3 Soil Porosity:",
-                                                                0.1, step = 0.1, min = 0, max = 1),
+                                                                0.5, step = 0.1, min = 0, max = 1),
                                                    numericInput("porosSoil_WS9","WS9 Soil Porosity:",
-                                                                0.1, step = 0.1, min = 0, max = 1),
+                                                                0.5, step = 0.1, min = 0, max = 1),
                                                    numericInput("porosPM_WS3","WS3 Parent Material Porosity:",
-                                                                0.1, step = 0.1, min = 0, max = 1),
+                                                                0.4, step = 0.1, min = 0, max = 1),
                                                    numericInput("porosPM_WS9","WS9 Parent Material Porosity:",
-                                                                0.1, step = 0.1, min = 0, max = 1),
+                                                                0.4, step = 0.1, min = 0, max = 1),
                                                    numericInput("maxVWC_WS3","WS3 Maximum VWC:",
-                                                                0.1, step = 0.1, min = 0, max = 1),
+                                                                0.01, step = 0.1, min = 0.001, max = 1),
                                                    numericInput("maxVWC_WS9","WS9 Maximum VWC:",
-                                                                0.1, step = 0.1, min = 0, max = 1),
+                                                                0.01, step = 0.1, min = 0.001, max = 1),
                                                    verbatimTextOutput("valueSoil_WS3"),
                                                    verbatimTextOutput("valueSoil_WS9"),
                                                    verbatimTextOutput("valuePM_WS3"),
