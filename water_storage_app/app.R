@@ -334,11 +334,11 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Watershed Storage Data App",
                                                                   0.4, step = 0.1, min = 0, max = 1),
                                                      numericInput("maxVWC","Maximum VWC:",
                                                                   0.01, step = 0.1, min = 0.001, max = 1),
-                                                     #dateInput("VertDate", label = "Date to view:", val= "2021-01-21"),
+                                                     dateInput("VertDate", label = "Date to view:", val= "2021-01-21"),
                                                      verbatimTextOutput("valueSoil"),
                                                      verbatimTextOutput("valuePM"),
                                                      verbatimTextOutput("maxVWC"),
-                                                     #verbatimTextOutput("VertDate"),
+                                                     verbatimTextOutput("VertDate"),
                                                      fluid = TRUE),
                                         mainPanel(
                                           fluidRow(
@@ -565,7 +565,8 @@ server <- function(input, output) {
         #select(TIMESTAMP, standardized_well_2, standardized_deep_well, Depthcleaned) %>% 
             filter(mm > 0 & TIMESTAMP >= ranges$x[1] & TIMESTAMP <= ranges$x[2]) %>% 
             ggplot(mapping = aes(x = TIMESTAMP, y = mm, fill=Water))+
-            #geom_vline(xintercept = as.Date(input$VertDate), color = "red", size = 1.5)+
+            #geom_vline(xintercept = as.numeric(as.POSIXct(input$VertDate)), linetype=4)+
+            #geom_vline(xintercept=as.numeric(as.POSIXct(input$vertDate[120])), linetype=4)+
             geom_area() +
         
         labs(x = "Time", y = "Storage (mm)")+
