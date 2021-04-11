@@ -17,6 +17,7 @@ library(DT) #MU: Helpful for displaying data tables.
 library(tidyverse) #MU: I added tidyverse because it has ggplot2 and other good functions 
 library(grid)
 library(shinythemes)
+library(rgdal)
 library(googledrive)
 library(ggplot2)
 #reading in WS3 well data
@@ -280,6 +281,14 @@ WS_discharge <- full_join(WS3_weir, WS9_weir, by = "TIMESTAMP") %>%
 #The times do not line up at all so mostly it just simplifies it by being all in one table 
 WS_precip_dis <- full_join(WS_precip, WS_discharge, by = c("TIMESTAMP", "Watershed"))
 
+#read in shapefile for map visualization 
+ws_shp <- readOGR(dsn = "water_data_files/hbef_wsheds", layer = "hbef_wsheds")
+
+ws_latlon <- spTransform(ws_shp, CRS("+proj=longlat +datum=WGS84"))
+
+#projection(ws_shp)="+init=epsg:3857"
+
+ws_latlon <- ws_latlon[ws_latlon$WS %in% c("WS3", "WS9"),]
 
 # Define UI for application
 ui <- fluidPage(navbarPage("Hubbard Brook - Watershed Storage Data App",
@@ -710,7 +719,8 @@ server <- function(input, output) {
     
     m <-leaflet() %>% 
         addProviderTiles("OpenTopoMap", options = providerTileOptions(noWrap = TRUE)) %>% 
-        addMarkers(lng= -71.7185, lat = 43.9403, popup = "Hubbard Brook Experimental Forest")
+        addPolygons(data = ws_latlon, fill = TRUE, stroke = TRUE, color = "#03F", opacity = 0.5) %>% 
+        addLegend("bottomright", colors = "#03F", labels = "Hubbard Brook Wastersheds")
     
     output$map <- renderLeaflet(m)
     
