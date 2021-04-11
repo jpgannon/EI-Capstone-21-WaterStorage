@@ -724,7 +724,8 @@ server <- function(input, output) {
     m <-leaflet() %>% 
         addProviderTiles("OpenTopoMap", options = providerTileOptions(noWrap = TRUE)) %>% 
         addPolygons(data = ws_latlon, fill = TRUE, stroke = TRUE, color = "#03F", opacity = 0.5, popup = popup_dat) %>% 
-        addLegend("bottomright", colors = "#03F", labels = "Hubbard Brook Wastershed Areas of Study and Analysis")
+        addLegend("bottomright", colors = "#03F", labels = "Wastershed Areas 
+                  of Study and Analysis (click to identify)")
     
     output$map <- renderLeaflet(m)
     
