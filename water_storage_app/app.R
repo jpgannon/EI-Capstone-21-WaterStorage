@@ -38,9 +38,9 @@ ws3_upper_wells <-  ws3_upper_wells %>%
     summarise(WS3_N1_corr_depth = mean(WS3_N1_corr_depth),
               WS3_N2_corr_depth = mean(WS3_N2_corr_depth), 
               WS3_42_4_d2_corr_depth = mean(WS3_42_4_d2_corr_depth)) %>%
-    ungroup() %>%
-    mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
-    select(-c(month, day, year, hour))
+              ungroup() %>%
+              mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
+              select(-c(month, day, year, hour))
 
 
 
@@ -63,9 +63,9 @@ ws9_upper_wells <-  ws9_upper_wells %>%
     summarise(HB156_corr_depth = mean(HB156_corr_depth),
               HB179s_corr_depth = mean(HB179s_corr_depth), 
               HB176d_corr_depth = mean(HB176d_corr_depth)) %>%
-    ungroup() %>%
-    mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
-    select(-c(month, day, year, hour))
+              ungroup() %>%
+              mutate(TIMESTAMP = mdy_h(paste(month, day, year, hour)))%>%
+              select(-c(month, day, year, hour))
 
 #cleaning snow data further
 cleanDepth <- function(depth, cutoff1=-15, cutoff2=150, cutoff3=5){
@@ -133,10 +133,7 @@ ws3_upper_snowdat_hr$Depthcleaned <- cleanDepth(depth = ws3_upper_snowdat_hr$Dep
 
 #note that it probably makes sense to start the ws3 snow depth time series after the big gap when things 
 #start looking like they are working correctly...
-
-
 #####################################################################
-# handy trick for cleaning multiple columns of data in a df:
 
 #conditionally replace extremely low and extremely high air/snow temps with NAfor all colnames containing "RTD":
 ws3_upper_snowdat_hr[,grep("RTD", colnames(ws3_upper_snowdat_hr))] <- lapply(ws3_upper_snowdat_hr[,grep("RTD", colnames(ws3_upper_snowdat_hr))], function(x) replace(x, x > 50, NA))
@@ -376,9 +373,11 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Watershed Storage Data App",
                                                               0.4, step = 0.1, min = 0, max = 1),
                                                  numericInput("maxVWC1","Maximum VWC:",
                                                               0.01, step = 0.1, min = 0.001, max = 1),
+                                                 dateInput("VertDate1", label = "Date to view:", val= "2021-01-21"),
                                                  verbatimTextOutput("valueSoil1"),
                                                  verbatimTextOutput("valuePM1"),
                                                  verbatimTextOutput("maxVWC1"),
+                                                 verbatimTextOutput("VertDate1"),
                                                  fluid = TRUE),
                                       mainPanel(
                                         fluidRow(
@@ -425,12 +424,14 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Watershed Storage Data App",
                                                                 0.01, step = 0.1, min = 0.001, max = 1),
                                                    numericInput("maxVWC_WS9","WS9 Maximum VWC:",
                                                                 0.01, step = 0.1, min = 0.001, max = 1),
+                                                   dateInput("VertDate2", label = "Date to view:", val= "2021-01-21"),
                                                    verbatimTextOutput("valueSoil_WS3"),
                                                    verbatimTextOutput("valueSoil_WS9"),
                                                    verbatimTextOutput("valuePM_WS3"),
                                                    verbatimTextOutput("valuePM_WS9"),
                                                    verbatimTextOutput("maxVWC_WS3"),
                                                    verbatimTextOutput("maxVWC_WS9"),
+                                                   verbatimTextOutput("VertDate2"),
                                                    fluid = TRUE),
                                       mainPanel(
                                       #line plots for comparing the two watersheds 
@@ -519,7 +520,6 @@ server <- function(input, output) {
             `colnames<-`(c("TIMESTAMP", "ws9_snow", "ws9_shallow_well", "ws9_deep_well")) %>% 
             pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
             filter(TIMESTAMP >= ranges2$x[1] & TIMESTAMP <= ranges2$x[2])
-    
     })
     
     standard_full <- reactive ({
@@ -527,9 +527,6 @@ server <- function(input, output) {
         #select(TIMESTAMP, Water.x, mm.x) %>% 
         `colnames<-`(c("TIMESTAMP", "Water", "mm")) %>% 
         filter(TIMESTAMP >= ranges3$x[1] & TIMESTAMP <= ranges3$x[2])
-      #`colnames<-`(c("TIMESTAMP", "ws3_snow", "ws3_shallow_well", "ws3_deep_well", "ws9_snow", "ws9_shallow_well", "ws9_deep_well")) #%>% 
-       # pivot_longer(!TIMESTAMP, names_to = "Water", values_to = "mm") %>% 
-       # filter(TIMESTAMP > ymd("2020-12-16"))
        })
     
     #Combines data to display on WS 3 page
@@ -568,28 +565,24 @@ server <- function(input, output) {
             #geom_vline(xintercept=as.numeric(as.POSIXct(input$vertDate[120])), linetype=4)+
             geom_area()+
             geom_vline(xintercept = (as.POSIXct(input$VertDate)), color = "red", linetype=4)+
-            
-        
-        labs(x = "Time", y = "Storage (mm)")+
-        scale_fill_brewer()+
-        theme_dark()+ 
-        theme(legend.position="bottom")+
-        theme(axis.title.x = element_blank())
-        
-        #scale_x_datetime(labels=date_format("%Y-%m-%d"), breaks = date_breaks("week"))
-    })
+            labs(x = "Time", y = "Storage (mm)")+
+            scale_fill_brewer()+
+            theme_dark()+ 
+            theme(legend.position="bottom")+
+            theme(axis.title.x = element_blank())
+        })
+    
     output$plot2 <- renderPlot({
       ws9_standard() %>%
         filter(mm > 0 & TIMESTAMP >= ranges2$x[1] & TIMESTAMP <= ranges2$x[2]) %>%
         ggplot(aes(x = TIMESTAMP, y = mm, fill=Water))+
         geom_area() +
+        geom_vline(xintercept = (as.POSIXct(input$VertDate1)), color = "red", linetype=4)+
         labs(x = "Time", y = "Storage (mm)", labels=c("Deep Well", "Snow", "Shalllow Well"))+
         scale_fill_brewer()+
         theme_dark()+
         theme(legend.position="bottom")+
         theme(axis.title.x = element_blank())
-        
-      #scale_x_datetime(labels=date_format("%Y-%m-%d"), breaks = date_breaks("week"))
     })
     
     output$discharge1 <- renderPlot({
@@ -597,6 +590,7 @@ server <- function(input, output) {
         filter(Watershed == "WS3_Discharge" & TIMESTAMP >= ranges$x[1] & TIMESTAMP <= ranges$x[2]) %>% 
         ggplot(aes(x = TIMESTAMP, y = Discharge)) +
         geom_line()+
+        geom_vline(xintercept = (as.POSIXct(input$VertDate)), color = "red", linetype=4)+
         labs(y="Discharge (mm)")+
         scale_fill_brewer()+
         theme_dark()+
@@ -610,6 +604,7 @@ server <- function(input, output) {
         filter(Watershed == "W9_Discharge" & TIMESTAMP >= ranges2$x[1] & TIMESTAMP <= ranges2$x[2]) %>% 
         ggplot(aes(x = TIMESTAMP, y = Discharge)) +
         geom_line()+
+        geom_vline(xintercept = (as.POSIXct(input$VertDate1)), color = "red", linetype=4)+
         labs(y="Discharge (mm)")+
         scale_fill_brewer()+
         theme_dark()+ 
@@ -624,6 +619,7 @@ server <- function(input, output) {
         filter(Watershed == "W3_Precip" & TIMESTAMP >= ranges$x[1] & TIMESTAMP <= ranges$x[2]) %>% 
         ggplot(aes(x = TIMESTAMP, y = Precip)) +
         geom_bar(stat = "identity", fill="skyblue3")+
+        geom_vline(xintercept = (as.POSIXct(input$VertDate)), color = "red", linetype=4)+
         labs(y="Precipitation (mm)")+
         ylim(0, 0.6)+
         theme_dark()+
@@ -637,6 +633,7 @@ server <- function(input, output) {
         filter(Watershed == "W9_Precip" & TIMESTAMP >= ranges2$x[1] & TIMESTAMP <= ranges2$x[2]) %>% 
         ggplot(aes(x = TIMESTAMP, y = Precip)) +
         geom_bar(stat = "identity", fill="skyblue3")+
+        geom_vline(xintercept = (as.POSIXct(input$VertDate1)), color = "red", linetype=4)+
         scale_fill_brewer()+
         labs(y="Precipitation (mm)")+
         theme_dark()+
@@ -650,6 +647,7 @@ server <- function(input, output) {
         filter(Water %in% input$variables & TIMESTAMP >= ranges3$x[1] & TIMESTAMP <= ranges3$x[2]) %>%
         ggplot(aes(x = TIMESTAMP, y = mm, group = Water)) +
         geom_line(aes(color=Water))+
+        geom_vline(xintercept = (as.POSIXct(input$VertDate2)), color = "red", linetype=4)+
         scale_fill_brewer()+
         labs(y="Storage (mm)")+
         theme_dark()+
@@ -663,6 +661,7 @@ server <- function(input, output) {
       filter(TIMESTAMP >= ranges3$x[1] & TIMESTAMP <= ranges3$x[2]) %>% 
         ggplot(aes(x = TIMESTAMP, y = Precip, group = Watershed)) +
         geom_bar(stat = "identity", aes(color=Watershed))+
+        geom_vline(xintercept = (as.POSIXct(input$VertDate2)), color = "red", linetype=4)+
         scale_fill_brewer()+
         labs(y="Precipitation (mm)")+
         theme_dark()+
@@ -675,13 +674,12 @@ server <- function(input, output) {
         filter(TIMESTAMP >= ranges3$x[1] & TIMESTAMP <= ranges3$x[2]) %>% 
         ggplot(aes(x = TIMESTAMP, y = Discharge, group = Watershed)) +
         geom_line(aes(color=Watershed))+
+        geom_vline(xintercept = (as.POSIXct(input$VertDate2)), color = "red", linetype=4)+
         labs(y="Discharge (mm)")+
         scale_fill_brewer()+
         theme_dark()+ 
         theme(axis.title.x = element_blank())+
         theme(legend.position="bottom")
-      
-    
     })
     
     # Brushing -----------------------------------
