@@ -578,11 +578,12 @@ server <- function(input, output) {
             #geom_vline(xintercept=as.numeric(as.POSIXct(input$vertDate[120])), linetype=4)+
             geom_area()+
             geom_vline(xintercept = (as.POSIXct(input$VertDate)), color = "red", linetype=4)+
-            labs(x = "Time", y = "Storage (mm)")+
+            labs(x = "Time", y = "Storage (mm)", labels=c("Deep Well", "Snow", "Shalllow Well"))+
             scale_fill_brewer()+
             theme_dark()+ 
             theme(legend.position="bottom")+
-            theme(axis.title.x = element_blank())
+            theme(axis.title.x = element_blank())+
+            theme(text = element_text(size=16))
         })
     
     output$plot2 <- renderPlot({
@@ -595,19 +596,21 @@ server <- function(input, output) {
         scale_fill_brewer()+
         theme_dark()+
         theme(legend.position="bottom")+
-        theme(axis.title.x = element_blank())
+        theme(axis.title.x = element_blank()) +
+        theme(text = element_text(size=16))
     })
     
     output$discharge1 <- renderPlot({
       WS_discharge %>% 
         filter(Watershed == "WS3_Discharge" & TIMESTAMP >= ranges$x[1] & TIMESTAMP <= ranges$x[2]) %>% 
         ggplot(aes(x = TIMESTAMP, y = Discharge)) +
-        geom_line()+
+        geom_line(size = 1)+
         geom_vline(xintercept = (as.POSIXct(input$VertDate)), color = "red", linetype=4)+
         labs(y="Discharge (mm)")+
         scale_fill_brewer()+
         theme_dark()+
-        theme(axis.title.x = element_blank())
+        theme(axis.title.x = element_blank())+
+        theme(text = element_text(size=16))
       
       #MU: This is where discharge plot for WS3 goes.
     })
@@ -616,12 +619,13 @@ server <- function(input, output) {
       WS_discharge %>% 
         filter(Watershed == "W9_Discharge" & TIMESTAMP >= ranges2$x[1] & TIMESTAMP <= ranges2$x[2]) %>% 
         ggplot(aes(x = TIMESTAMP, y = Discharge)) +
-        geom_line()+
+        geom_line(size = 1)+
         geom_vline(xintercept = (as.POSIXct(input$VertDate1)), color = "red", linetype=4)+
         labs(y="Discharge (mm)")+
         scale_fill_brewer()+
         theme_dark()+ 
-        theme(axis.title.x = element_blank())
+        theme(axis.title.x = element_blank())+
+        theme(text = element_text(size=16))
       
       #MU: This is where discharge plot for WS9 goes.
     })
@@ -636,7 +640,8 @@ server <- function(input, output) {
         labs(y="Precipitation (mm)")+
         ylim(0, 0.6)+
         theme_dark()+
-        theme(axis.title.x = element_blank())
+        theme(axis.title.x = element_blank())+
+        theme(text = element_text(size=16))
       
     })
     
@@ -650,7 +655,8 @@ server <- function(input, output) {
         scale_fill_brewer()+
         labs(y="Precipitation (mm)")+
         theme_dark()+
-        theme(axis.title.x = element_blank())
+        theme(axis.title.x = element_blank())+
+        theme(text = element_text(size=16))
       
     })
     
@@ -659,13 +665,14 @@ server <- function(input, output) {
       compare_full() %>%
         filter(Water %in% input$variables & TIMESTAMP >= ranges3$x[1] & TIMESTAMP <= ranges3$x[2]) %>%
         ggplot(aes(x = TIMESTAMP, y = mm, group = Water)) +
-        geom_line(aes(color=Water))+
+        geom_line(aes(color=Water), size = 1)+
         geom_vline(xintercept = (as.POSIXct(input$VertDate2)), color = "red", linetype=4)+
         scale_fill_brewer()+
         labs(y="Storage (mm)")+
         theme_dark()+
         theme(axis.title.x = element_blank())+
-        theme(legend.position="bottom")
+        theme(legend.position="bottom")+
+        theme(text = element_text(size=16))
     })
     
     
@@ -679,20 +686,22 @@ server <- function(input, output) {
         labs(y="Precipitation (mm)")+
         theme_dark()+
         theme(axis.title.x = element_blank())+
-        theme(legend.position="bottom")
+        theme(legend.position="bottom")+
+        theme(text = element_text(size=16))
     }) 
     
     output$dis_compare <- renderPlot({
       WS_discharge %>% 
         filter(TIMESTAMP >= ranges3$x[1] & TIMESTAMP <= ranges3$x[2]) %>% 
         ggplot(aes(x = TIMESTAMP, y = Discharge, group = Watershed)) +
-        geom_line(aes(color=Watershed))+
+        geom_line(aes(color=Watershed), size = 1)+
         geom_vline(xintercept = (as.POSIXct(input$VertDate2)), color = "red", linetype=4)+
         labs(y="Discharge (mm)")+
         scale_fill_brewer()+
         theme_dark()+ 
         theme(axis.title.x = element_blank())+
-        theme(legend.position="bottom")
+        theme(legend.position="bottom")+
+        theme(text = element_text(size=16))
     })
     
     # Brushing -----------------------------------
