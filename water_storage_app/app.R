@@ -460,13 +460,13 @@ server <- function(input, output) {
     
   #MU: Date range to filter brushing
   ranges <- reactiveValues(x = ymd(c(start = "2021-01-21",
-                                    end = "2021-04-08")))
+                                    end = "2021-04-10")))
   #MU: Date range to filter brushing
   ranges2 <- reactiveValues(x = ymd(c(start = "2021-01-21",
-                                     end = "2021-04-08")))
+                                     end = "2021-04-10")))
   #MU: Date range to filter brushing
   ranges3 <- reactiveValues(x = ymd(c(start = "2021-01-21",
-                                     end = "2021-04-08")))
+                                     end = "2021-04-10")))
   
     
     #MU: standardized well ws3 data to mm H2O
@@ -565,9 +565,10 @@ server <- function(input, output) {
         #select(TIMESTAMP, standardized_well_2, standardized_deep_well, Depthcleaned) %>% 
             filter(mm > 0 & TIMESTAMP >= ranges$x[1] & TIMESTAMP <= ranges$x[2]) %>% 
             ggplot(mapping = aes(x = TIMESTAMP, y = mm, fill=Water))+
-            #geom_vline(xintercept = as.numeric(as.POSIXct(input$VertDate)), linetype=4)+
             #geom_vline(xintercept=as.numeric(as.POSIXct(input$vertDate[120])), linetype=4)+
-            geom_area() +
+            geom_area()+
+            geom_vline(xintercept = (as.POSIXct(input$VertDate)), color = "red", linetype=4)+
+            
         
         labs(x = "Time", y = "Storage (mm)")+
         scale_fill_brewer()+
@@ -646,7 +647,7 @@ server <- function(input, output) {
     #MU: Comparative plot
     output$compare <- renderPlot ({
       compare_full() %>%
-        filter(Water == input$variables & TIMESTAMP >= ranges3$x[1] & TIMESTAMP <= ranges3$x[2]) %>%
+        filter(Water %in% input$variables & TIMESTAMP >= ranges3$x[1] & TIMESTAMP <= ranges3$x[2]) %>%
         ggplot(aes(x = TIMESTAMP, y = mm, group = Water)) +
         geom_line(aes(color=Water))+
         scale_fill_brewer()+
