@@ -281,15 +281,19 @@ WS_discharge <- full_join(WS3_weir, WS9_weir, by = "TIMESTAMP") %>%
 #The times do not line up at all so mostly it just simplifies it by being all in one table 
 WS_precip_dis <- full_join(WS_precip, WS_discharge, by = c("TIMESTAMP", "Watershed"))
 
-#read in shapefile for map visualization 
+#reading in shapefile for map visualization 
 ws_shp <- readOGR(dsn = "water_data_files/hbef_wsheds", layer = "hbef_wsheds")
 
+#changing data projection to standard lat/lon
 ws_latlon <- spTransform(ws_shp, CRS("+proj=longlat +datum=WGS84"))
 
-#projection(ws_shp)="+init=epsg:3857"
 
+#selecting ws areas of study
 ws_latlon <- ws_latlon[ws_latlon$WS %in% c("WS3", "WS9"),]
 
+#adding popup information
+popup_dat <- paste0("<strong>Watershed: </strong>", 
+                    ws_latlon$WS)
 # Define UI for application
 ui <- fluidPage(navbarPage("Hubbard Brook - Watershed Storage Data App",
                            theme = shinytheme('cosmo'),
@@ -719,8 +723,8 @@ server <- function(input, output) {
     
     m <-leaflet() %>% 
         addProviderTiles("OpenTopoMap", options = providerTileOptions(noWrap = TRUE)) %>% 
-        addPolygons(data = ws_latlon, fill = TRUE, stroke = TRUE, color = "#03F", opacity = 0.5) %>% 
-        addLegend("bottomright", colors = "#03F", labels = "Hubbard Brook Wastersheds")
+        addPolygons(data = ws_latlon, fill = TRUE, stroke = TRUE, color = "#03F", opacity = 0.5, popup = popup_dat) %>% 
+        addLegend("bottomright", colors = "#03F", labels = "Hubbard Brook Wastershed Areas of Study and Analysis")
     
     output$map <- renderLeaflet(m)
     
