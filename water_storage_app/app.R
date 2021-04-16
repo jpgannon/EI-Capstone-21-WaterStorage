@@ -474,13 +474,13 @@ server <- function(input, output) {
     
   #MU: Date range to filter brushing
   ranges <- reactiveValues(x = ymd(c(start = "2021-01-21",
-                                    end = "2021-04-10")))
+                                    end = toString(Sys.Date()))))
   #MU: Date range to filter brushing
   ranges2 <- reactiveValues(x = ymd(c(start = "2021-01-21",
-                                     end = "2021-04-10")))
+                                     end = toString(Sys.Date()))))
   #MU: Date range to filter brushing
   ranges3 <- reactiveValues(x = ymd(c(start = "2021-01-21",
-                                     end = "2021-04-10")))
+                                     end = toString(Sys.Date()))))
   
     
     #MU: standardized well ws3 data to mm H2O
