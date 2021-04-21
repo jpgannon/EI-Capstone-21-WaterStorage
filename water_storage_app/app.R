@@ -706,6 +706,25 @@ server <- function(input, output) {
     
     # Brushing -----------------------------------
     
+    observeEvent(input$startdate,{
+      ranges$x <- c(input$startdate, input$enddate)
+    })
+    observeEvent(input$enddate,{
+      ranges$x <- c(input$startdate, input$enddate)
+    })
+    observeEvent(input$startdate1,{
+      ranges2$x <- c(input$startdate1, input$enddate1)
+    })
+    observeEvent(input$enddate1,{
+      ranges2$x <- c(input$startdate1, input$enddate1)
+    })
+    observeEvent(input$startdate2,{
+      ranges3$x <- c(input$startdate2, input$enddate2)
+    })
+    observeEvent(input$enddate2,{
+      ranges3$x <- c(input$startdate2, input$enddate2)
+    })
+    
     # On double-click event it checks for a brush
     # Yes, display data and zoom
     observeEvent(input$plot_dblclick, {
@@ -726,6 +745,7 @@ server <- function(input, output) {
       }
     }
     )
+    
     
     # Plot map of station locations using leaflet
     #---------------------------------------------
