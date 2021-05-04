@@ -22,6 +22,8 @@ library(googledrive)
 library(ggplot2)
 #reading in WS3 well data
 #setwd("/Volumes/GoogleDrive/My Drive/CLASSES/EI Capstone/EI_Capstone_S21")
+
+#Read in WS 3 parent well 
 ws3_upper_wells <- read_csv("Water_table_WS3upper_WS_3Up_wells.dat",
                             skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", X3 ="Batt_Volt", 
                                                     X4= "ptemp_Max" , X5= "WS3_N1_psi",X6="WS3_N1_rawdepth",
@@ -34,6 +36,7 @@ ws3_upper_wells <- read_csv("Water_table_WS3upper_WS_3Up_wells.dat",
                                                     X19="WS3_42_4_d2_welltemp"))%>%
     select(TIMESTAMP, WS3_N1_corr_depth, WS3_N2_corr_depth, WS3_42_4_d2_corr_depth)  
 
+#Find averages of WS 3 well data by the hour 
 ws3_upper_wells <-  ws3_upper_wells %>%
     group_by(year = year(TIMESTAMP), month = month(TIMESTAMP), day = day(TIMESTAMP), hour = hour(TIMESTAMP)) %>% 
     summarise(WS3_N1_corr_depth = mean(WS3_N1_corr_depth),
@@ -44,7 +47,7 @@ ws3_upper_wells <-  ws3_upper_wells %>%
               select(-c(month, day, year, hour))
 
 
-
+#Read in WS 9 parent well
 ws9_upper_wells <- read_csv("Water_table_WS9_WS_9_wells.dat",
                             skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD",
                                                     X3 ="Batt_Volt", X4= "ptemp_Max" , 
@@ -59,6 +62,7 @@ ws9_upper_wells <- read_csv("Water_table_WS9_WS_9_wells.dat",
     select(TIMESTAMP, HB156_corr_depth, HB179s_corr_depth, HB176d_corr_depth) %>% 
     filter(TIMESTAMP > "2021-01-20")
 
+#Find averages of WS 9 well data by the hour 
 ws9_upper_wells <-  ws9_upper_wells %>%
     group_by(year = year(TIMESTAMP), month = month(TIMESTAMP), day = day(TIMESTAMP), hour = hour(TIMESTAMP)) %>% 
     summarise(HB156_corr_depth = mean(HB156_corr_depth),
@@ -84,8 +88,7 @@ cleanDepth <- function(depth, cutoff1=-15, cutoff2=150, cutoff3=5){
   return(depth)
 }
 
-#reading in WS3 Snow 15 mins 
-
+#reading in WS3 Snow 15 mins (never used)
 ws3_upper_snowdat15mins <- read_csv("Water_table_WS3upper_WS_3Up_snowdat_15min.dat",
                                     skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", 
                                                             X3 ="Batt_Volt", X4= "ptemp" , 
@@ -105,7 +108,6 @@ ws3_upper_snowdat15mins <- ws3_upper_snowdat15mins %>%
 
 
 #reading in WS3 Snow hourly data 
-
 ws3_upper_snowdat_hr <- read_csv("Water_table_WS3upper_WS_3Up_snowdat_hr.dat",
                                  skip = 4, col_names = c(X1 = "TIMESTAMP" , 
                                                          X2 = "RECORD", X3 ="H2O_Content_1_Avg", 
@@ -131,18 +133,11 @@ min_WS3snow<- min(ws3_upper_snowdat_hr$VWC_average, na.rm = TRUE)
 #clean:
 ws3_upper_snowdat_hr$Depthcleaned <- cleanDepth(depth = ws3_upper_snowdat_hr$Depthscaled_Avg, cutoff1=-15, cutoff2=150, cutoff3=5)
 
-
-#note that it probably makes sense to start the ws3 snow depth time series after the big gap when things 
-#start looking like they are working correctly...
-#####################################################################
-
 #conditionally replace extremely low and extremely high air/snow temps with NAfor all colnames containing "RTD":
 ws3_upper_snowdat_hr[,grep("RTD", colnames(ws3_upper_snowdat_hr))] <- lapply(ws3_upper_snowdat_hr[,grep("RTD", colnames(ws3_upper_snowdat_hr))], function(x) replace(x, x > 50, NA))
 ws3_upper_snowdat_hr[,grep("RTD", colnames(ws3_upper_snowdat_hr))] <- lapply(ws3_upper_snowdat_hr[,grep("RTD", colnames(ws3_upper_snowdat_hr))], function(x) replace(x, x < -50, NA))
 
-#reading in WS9 Snow 15 mins 
-# AW - currently the VWC is either 0 or NA for all entries 
-
+#reading in WS9 Snow 15 mins (never used)
 ws9_upper_snowdat15mins <- read_csv("Water_table_WS9_WS_9_snowdat_15min.dat",
                                     skip = 4, col_names = c(X1 = "TIMESTAMP" ,
                                                             X2 = "RECORD", X3 ="Batt_Volt", 
@@ -164,7 +159,6 @@ ws9_upper_snowdat15mins <- ws9_upper_snowdat15mins %>%
                                   na.rm = TRUE ))
 
 #reading in WS9 Snow hourly data 
-
 ws9_upper_snowdat_hr <- read_csv("Water_table_WS9_WS_9_snowdat_hr.dat",
                                  skip = 4, col_names = c(X1 = "TIMESTAMP" , X2 = "RECORD", 
                                                          X3 ="H2O_Content_1_Avg", X4= "H2O_Content_2_Avg", 
@@ -190,21 +184,12 @@ min_WS9snow<- min(ws9_upper_snowdat_hr$VWC_average, na.rm = TRUE)
 #clean:
 ws9_upper_snowdat_hr$Depthcleaned <- cleanDepth(depth = ws9_upper_snowdat_hr$Depthscaled_Avg, cutoff1=-15, cutoff2=150, cutoff3=5)
 
-
-#note that it probably makes sense to start the ws3 snow depth time series after the big gap when things 
-#start looking like they are working correctly...
-
-
-#####################################################################
-# handy trick for cleaning multiple columns of data in a df:
-
 #conditionally replace extremely low and extremely high air/snow temps with NAfor all colnames containing "RTD":
 ws9_upper_snowdat_hr[,grep("RTD", colnames(ws9_upper_snowdat_hr))] <- lapply(ws9_upper_snowdat_hr[,grep("RTD", colnames(ws9_upper_snowdat_hr))], function(x) replace(x, x > 50, NA))
 ws9_upper_snowdat_hr[,grep("RTD", colnames(ws9_upper_snowdat_hr))] <- lapply(ws9_upper_snowdat_hr[,grep("RTD", colnames(ws9_upper_snowdat_hr))], function(x) replace(x, x < -50, NA))
 
 
 #AW - Read in precip & discharge data 
-
 WS3_weir <- read_csv("weir3_Ws_3b.dat", 
                      skip = 4,
                      col_names = c(X1 = "TIMESTAMP", X2 = "Record", X3 = "Batt",
