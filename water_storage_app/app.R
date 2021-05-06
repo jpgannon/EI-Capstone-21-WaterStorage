@@ -13,15 +13,17 @@ library(shiny)
 library(shinydashboard)
 library(leaflet)
 library(lubridate)
-library(DT) #MU: Helpful for displaying data tables.
-library(tidyverse) #MU: I added tidyverse because it has ggplot2 and other good functions 
+library(DT) # Helpful for displaying data tables.
+library(tidyverse)  
 library(grid)
 library(shinythemes)
 library(rgdal)
 library(googledrive)
 library(ggplot2)
+
+
 #reading in WS3 well data
-#setwd("/Volumes/GoogleDrive/My Drive/CLASSES/EI Capstone/EI_Capstone_S21")
+
 
 #Read in WS 3 parent well 
 ws3_upper_wells <- read_csv("Water_table_WS3upper_WS_3Up_wells.dat",
@@ -101,7 +103,7 @@ ws3_upper_snowdat15mins <- read_csv("Water_table_WS3upper_WS_3Up_snowdat_15min.d
                                                             X20= "Depthscaled"))%>%
     select(TIMESTAMP, H2O_Content_1, H2O_Content_2, Depthscaled) 
 
-#AW - adds a column with the average ignoring the NA 
+# - adds a column with the average ignoring the NA 
 ws3_upper_snowdat15mins <- ws3_upper_snowdat15mins %>% 
     mutate(VWC_average = rowMeans(ws3_upper_snowdat15mins[,c('H2O_Content_1','H2O_Content_2')],
                                   na.rm = TRUE ))
@@ -121,16 +123,16 @@ ws3_upper_snowdat_hr <- read_csv("Water_table_WS3upper_WS_3Up_snowdat_hr.dat",
                                                          X18= "Depthscaled_Avg"))%>%
     select(TIMESTAMP, H2O_Content_1_Avg, H2O_Content_2_Avg, Depthscaled_Avg) 
 
-#AW - adds a column with the average ignoring the NA 
+# - adds a column with the average ignoring the NA 
 ws3_upper_snowdat_hr <- ws3_upper_snowdat_hr %>% 
   mutate(VWC_average = rowMeans(ws3_upper_snowdat_hr[,c('H2O_Content_1_Avg','H2O_Content_2_Avg')],
                                 na.rm = TRUE ))
 
-#Find the min VWC value for WS 3 -AW 
+#Find the min VWC value for WS 3
 min_WS3snow<- min(ws3_upper_snowdat_hr$VWC_average, na.rm = TRUE)
 
 
-#clean:
+#function for cleaning Snow data depth:
 ws3_upper_snowdat_hr$Depthcleaned <- cleanDepth(depth = ws3_upper_snowdat_hr$Depthscaled_Avg, cutoff1=-15, cutoff2=150, cutoff3=5)
 
 #conditionally replace extremely low and extremely high air/snow temps with NAfor all colnames containing "RTD":
@@ -153,7 +155,7 @@ ws9_upper_snowdat15mins <- read_csv("Water_table_WS9_WS_9_snowdat_15min.dat",
     filter(TIMESTAMP > "2021-01-20")
 
 
-#AW - adds a column with the average ignoring the NA 
+#Adds a column with the average ignoring the NA 
 ws9_upper_snowdat15mins <- ws9_upper_snowdat15mins %>% 
     mutate(VWC_average = rowMeans(ws9_upper_snowdat15mins[,c('H2O_Content_1','H2O_Content_2')],
                                   na.rm = TRUE ))
@@ -173,12 +175,12 @@ ws9_upper_snowdat_hr <- read_csv("Water_table_WS9_WS_9_snowdat_hr.dat",
   filter(TIMESTAMP > "2021-01-20")
 
 
-#AW - adds a column with the average
+#Adds a column with the average
 ws9_upper_snowdat_hr <- ws9_upper_snowdat_hr %>% 
   mutate(VWC_average = rowMeans(ws9_upper_snowdat_hr[,c('H2O_Content_1_Avg','H2O_Content_2_Avg')],
                                 na.rm = TRUE ))
 
-#Find the min for VWC value for WS 9 -AW 
+#Find the min for VWC value for WS 9 
 min_WS9snow<- min(ws9_upper_snowdat_hr$VWC_average, na.rm = TRUE)
 
 #clean:
@@ -189,7 +191,7 @@ ws9_upper_snowdat_hr[,grep("RTD", colnames(ws9_upper_snowdat_hr))] <- lapply(ws9
 ws9_upper_snowdat_hr[,grep("RTD", colnames(ws9_upper_snowdat_hr))] <- lapply(ws9_upper_snowdat_hr[,grep("RTD", colnames(ws9_upper_snowdat_hr))], function(x) replace(x, x < -50, NA))
 
 
-#AW - Read in precip & discharge data 
+#Read in precip & discharge data 
 WS3_weir <- read_csv("weir3_Ws_3b.dat", 
                      skip = 4,
                      col_names = c(X1 = "TIMESTAMP", X2 = "Record", X3 = "Batt",
@@ -251,17 +253,17 @@ WS3_Precip <- read_csv("wxsta1_Wx_1_rain.dat",
   na_if(0)
 
 
-#AW - full join and pivot longer for the WS 3 & 9 precipitation data 
+#full join and pivot longer for the WS 3 & 9 precipitation data 
 WS_precip <- full_join(WS3_Precip, WS9_Precip, by = "TIMESTAMP") %>% 
   `colnames<-`(c("W3_Precip", "TIMESTAMP", "W9_Precip")) %>% 
   pivot_longer(!TIMESTAMP, names_to = "Watershed", values_to = "Precip")
 
-#AW - full join and pivot longer for the WS 3 & 9 discharge data 
+# - full join and pivot longer for the WS 3 & 9 discharge data 
 WS_discharge <- full_join(WS3_weir, WS9_weir, by = "TIMESTAMP") %>% 
   `colnames<-`(c("WS3_Discharge", "TIMESTAMP", "W9_Discharge")) %>% 
   pivot_longer(!TIMESTAMP, names_to = "Watershed", values_to = "Discharge")
 
-#AW - not sure if this is beneficial; full join for both watersheds of the precip
+# - not sure if this is beneficial; full join for both watersheds of the precip
 # and the discharge data so it is all in one table 
 #The times do not line up at all so mostly it just simplifies it by being all in one table 
 WS_precip_dis <- full_join(WS_precip, WS_discharge, by = c("TIMESTAMP", "Watershed"))
@@ -318,7 +320,7 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Watershed Storage Data App",
                            tabPanel('Watershed 3',
                                     sidebarLayout(
                                         sidebarPanel(width = 3,
-                                                     dateInput("startdate", label = "Start Date", val= "2021-01-21"), #MU: Should we make the default start value the first data present in the data we read in?
+                                                     dateInput("startdate", label = "Start Date", val= "2021-01-21"), #: Should we make the default start value the first data present in the data we read in?
                                                      dateInput("enddate", label= "End Date", value=Sys.Date(), max=Sys.Date()),
                                                      # selectInput(inputId = "toview", label = "Select dataset to view:", 
                                                      #             choices = unique(ws3_standard$name), 
@@ -360,7 +362,7 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Watershed Storage Data App",
                            tabPanel('Watershed 9',
                                     sidebarLayout(
                                     sidebarPanel(width = 3,
-                                                 dateInput("startdate1", label = "Start Date", val= "2021-01-21"), #MU: Should we make the default start value the first data present in the data we read in?
+                                                 dateInput("startdate1", label = "Start Date", val= "2021-01-21"), #: Should we make the default start value the first data present in the data we read in?
                                                  dateInput("enddate1", label= "End Date", value=Sys.Date(), max=Sys.Date()),
                                                  # selectInput(inputId = "toview", label = "Select dataset to view:",
                                                  #             choices = unique(ws3_standard$name),
@@ -402,7 +404,7 @@ ui <- fluidPage(navbarPage("Hubbard Brook - Watershed Storage Data App",
                            tabPanel('Comparative Watershed Data', 
                                     sidebarLayout(
                                       sidebarPanel(width = 3,
-                                                   dateInput("startdate2", label = "Start Date", val= "2021-01-21"), #MU: Should we make the default start value the first data present in the data we read in?
+                                                   dateInput("startdate2", label = "Start Date", val= "2021-01-21"), #: Should we make the default start value the first data present in the data we read in?
                                                    dateInput("enddate2", label= "End Date", value=Sys.Date(), max=Sys.Date()),
                                                    selectInput("variables", "Select Data to Plot:",
                                                                   c("ws3_snow", "ws3_shallow_well", "ws3_deep_well", "ws9_snow", 
@@ -457,18 +459,18 @@ server <- function(input, output) {
     # read in cleaned watershed data
     # ---------------
     
-  #MU: Date range to filter brushing
+  #: Date range to filter brushing
   ranges <- reactiveValues(x = ymd(c(start = "2021-01-21",
                                     end = toString(Sys.Date()))))
-  #MU: Date range to filter brushing
+  #: Date range to filter brushing
   ranges2 <- reactiveValues(x = ymd(c(start = "2021-01-21",
                                      end = toString(Sys.Date()))))
-  #MU: Date range to filter brushing
+  #: Date range to filter brushing
   ranges3 <- reactiveValues(x = ymd(c(start = "2021-01-21",
                                      end = toString(Sys.Date()))))
   
     
-    #MU: standardized well ws3 data to mm H2O
+    #: standardized well ws3 data to mm H2O
     standardized_Well_WS3 <-  reactive({
         ws3_upper_wells %>% 
             mutate(standardized_well_1 = ((WS3_N1_corr_depth * 10) * input$porosSoil)) %>% 
@@ -476,7 +478,7 @@ server <- function(input, output) {
             mutate(standardized_deep_well = ((WS3_42_4_d2_corr_depth * 10) * input$porosPM)) %>%
             select(TIMESTAMP, standardized_well_2, standardized_deep_well)
     })
-    #Mu: standardized well ws9 data to mm H2O
+    #: standardized well ws9 data to mm H2O
     standardized_Well_WS9 <-  reactive({
         ws9_upper_wells %>% 
             mutate(standardized_well_1 = ((HB156_corr_depth * 10) * input$porosSoil1)) %>% 
@@ -486,7 +488,7 @@ server <- function(input, output) {
     })
     
     
-    #MU: standardized snow ws3 data to mm H2O
+    #: standardized snow ws3 data to mm H2O
     standardized_SnowHr_WS3 <-  reactive({
         ws3_upper_snowdat_hr %>% 
             mutate(VWC_average = ((VWC_average - min_WS3snow) / (input$maxVWC - min_WS3snow ))) %>% 
@@ -494,7 +496,7 @@ server <- function(input, output) {
             select(TIMESTAMP, standardized_snow)
     })
     
-    #MU: standardized snow ws9 data to mm H2O
+    #: standardized snow ws9 data to mm H2O
     standardized_SnowHr_WS9 <- reactive({
         ws9_upper_snowdat_hr %>%
             mutate(VWC_average = ((VWC_average - min_WS9snow) / (input$maxVWC1 - min_WS9snow ))) %>% 
@@ -503,7 +505,7 @@ server <- function(input, output) {
         
     })
     
-    #MU: joined ws3 data
+    #: joined ws3 data
     ws3_standard <- reactive ({
         full_join(standardized_Well_WS3(), standardized_SnowHr_WS3(), by = "TIMESTAMP") %>% 
             select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well) %>% 
@@ -535,7 +537,7 @@ server <- function(input, output) {
         select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well, ReportPCP, Discharge)
     })
     
-    #MU: Combines data to display on WS 9 page
+    #: Combines data to display on WS 9 page
     ws9_full <- reactive({
       full_join(standardized_Well_WS9(), standardized_SnowHr_WS9(), by = "TIMESTAMP") %>%
         full_join(., WS9_Precip, by = "TIMESTAMP") %>% 
@@ -543,17 +545,17 @@ server <- function(input, output) {
         select(TIMESTAMP, standardized_snow, standardized_well_2, standardized_deep_well, ReportPCP, Discharge)
     })
     
-    output$table1 <- DT::renderDataTable({DT::datatable(ws3_full(),#input$chooseTable, #MU: When we do the calculations we can put them in one dataset and output that.
-                                                       class = "display", #MU: this is the style of the table
-                                                       caption = 'Table 1: This table shows precipitation, snow, discharge, and groundwater data for Watershed 3.', #MU: adds a caption to the table
+    output$table1 <- DT::renderDataTable({DT::datatable(ws3_full(),#input$chooseTable, #: When we do the calculations we can put them in one dataset and output that.
+                                                       class = "display", #: this is the style of the table
+                                                       caption = 'Table 1: This table shows precipitation, snow, discharge, and groundwater data for Watershed 3.', #: adds a caption to the table
                                                        filter = "top")
-    })#MU: This places the filter at the top of the table
+    })#: This places the filter at the top of the table
     
-    output$table2 <- DT::renderDataTable({DT::datatable(ws9_full(),#input$chooseTable, #MU: When we do the calculations we can put them in one dataset and output that.
-                                                        class = "display", #MU: this is the style of the table
-                                                        caption = 'Table 2: This table shows precipitation, snow, discharge, and groundwater data for Watershed 9.', #MU: adds a caption to the table
+    output$table2 <- DT::renderDataTable({DT::datatable(ws9_full(),#input$chooseTable, #: When we do the calculations we can put them in one dataset and output that.
+                                                        class = "display", #: this is the style of the table
+                                                        caption = 'Table 2: This table shows precipitation, snow, discharge, and groundwater data for Watershed 9.', #: adds a caption to the table
                                                         filter = "top")
-    })#MU: This places the filter at the top of the table
+    })#: This places the filter at the top of the table
     
     output$plot1 <- renderPlot({
         ws3_standard() %>%
@@ -597,7 +599,7 @@ server <- function(input, output) {
         theme(axis.title.x = element_blank())+
         theme(text = element_text(size=16))
       
-      #MU: This is where discharge plot for WS3 goes.
+      #: This is where discharge plot for WS3 goes.
     })
     
     output$discharge2 <- renderPlot({
@@ -612,11 +614,11 @@ server <- function(input, output) {
         theme(axis.title.x = element_blank())+
         theme(text = element_text(size=16))
       
-      #MU: This is where discharge plot for WS9 goes.
+      #: This is where discharge plot for WS9 goes.
     })
 
     output$precip1 <- renderPlot({
-      #MU: This is where precip plot for WS3 goes.
+      #: This is where precip plot for WS3 goes.
       WS_precip %>% 
         filter(Watershed == "W3_Precip" & TIMESTAMP >= ranges$x[1] & TIMESTAMP <= ranges$x[2]) %>% 
         ggplot(aes(x = TIMESTAMP, y = Precip)) +
@@ -631,7 +633,7 @@ server <- function(input, output) {
     })
     
     output$precip2 <- renderPlot({
-      #MU: This is where precip plot for WS9 goes.
+      #: This is where precip plot for WS9 goes.
       WS_precip %>% 
         filter(Watershed == "W9_Precip" & TIMESTAMP >= ranges2$x[1] & TIMESTAMP <= ranges2$x[2]) %>% 
         ggplot(aes(x = TIMESTAMP, y = Precip)) +
@@ -645,7 +647,7 @@ server <- function(input, output) {
       
     })
     
-    #MU: Comparative plot
+    #: Comparative plot
     output$compare <- renderPlot ({
       compare_full() %>%
         filter(Water %in% input$variables & TIMESTAMP >= ranges3$x[1] & TIMESTAMP <= ranges3$x[2]) %>%
@@ -732,7 +734,7 @@ server <- function(input, output) {
     )
     
     
-    # Plot map of station locations using leaflet
+    # Plot shapefiles of WS3 and WS9 locations using leaflet
     #---------------------------------------------
     
     m <-leaflet() %>% 
